@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>BY KEYU, visual storyteller</title>
+  <meta name="description" content="Keyu Hu is a Montréal visual storyteller, content strategist and editor making cinematic short videos for Instagram, and helping brands show up in videos people would have watched anyway." />
+  <meta property="og:title" content="BY KEYU, visual storyteller" />
+  <meta property="og:description" content="A Montréal creator who puts brands in videos people would have watched anyway." />
+  <meta property="og:image" content="assets/posters/storytelling1.jpg" />
+  <meta name="theme-color" content="#050505" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter+Tight:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://assets.calendly.com/assets/external/widget.css" />
+  <script type="importmap">{ "imports": { "three": "./vendor/three/three.module.min.js", "three/addons/": "./vendor/three/addons/" } }</script>
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body>
+  <!-- ============ Loader: opening titles ============ -->
+  <div class="loader" id="loader" aria-hidden="true">
+    <p class="loader__line"><span>Lights</span> <span>down,</span> <span>friend.</span> <span>Come</span> <span>in.</span></p>
+    <span class="loader__tc mono" id="loaderTc">00:00:00:00</span>
+    <span class="loader__skip mono">Click to skip</span>
+    <i class="loader__bar"></i>
+  </div>
+
+  <div class="grain" aria-hidden="true"></div>
+  <div class="cursor" aria-hidden="true"><span class="cursor__label"></span></div>
+
+  <!-- Fixed corners, after the hero -->
+  <div class="corners" aria-hidden="false">
+    <a class="cn cn--tl" href="#top" aria-label="BY KEYU, back to top"><small>BY</small><b>KEYU</b></a>
+    <a class="cn cn--tr" href="#book"><span class="u">Book a call</span><small>Open for 3 brands</small></a>
+    <div class="cn cn--bl mono"><span id="cnSection">Work</span><small>Montréal <span data-clock>00:00</span></small></div>
+    <div class="cn cn--br mono"><span id="cnProgress">00%</span><small>(scroll)</small></div>
+  </div>
+
+  <main>
+    <!-- ============ 1. HERO + into the eye ============ -->
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero__stage">
+        <header class="hg">
+          <a class="hg__cell hg__mark" href="#top"><small>BY</small><b>KEYU</b></a>
+          <div class="hg__cell hg__status mono">
+            <span>Montréal <span data-clock>00:00</span></span>
+            <span>Cutting on the breath…</span>
+            <span>Cautiously curious</span>
+            <span>3 brand spots open</span>
+          </div>
+          <nav class="hg__cell hg__nav mono" aria-label="Primary">
+            <a href="#work">Work</a><a href="#services">Services</a><a href="#letter">About</a><a href="#book">Contact</a>
+          </nav>
+          <button class="hg__cell hg__icon" type="button" id="soundToggle" aria-pressed="false" aria-label="Sound on hover">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+          </button>
+          <div class="hg__cell hg__icon mono hg__lang">EN</div>
+          <div class="hg__cell hg__tag"><span>Shooting from Montréal.</span><span><i>Videos people</i> watch to the end.</span></div>
+          <a class="hg__cell hg__cta" href="#book">Book a<br />free call<small class="mono">20 min, on Calendly</small></a>
+        </header>
+
+        <canvas class="hero__field" id="field" aria-hidden="true"></canvas>
+        <canvas class="hero__head" id="head" aria-hidden="true"></canvas>
+        <div class="hero__fallback" aria-hidden="true"></div>
+
+        <div class="tick tick--roles" aria-hidden="true"><div class="tick__track" data-tick="roles"></div></div>
+        <h1 class="giant" id="hero-title">
+          <span class="sr-only">Keyu Hu: visual storyteller, content strategist and editor in Montréal.</span>
+          <span class="giant__word" aria-hidden="true">Visual storyteller</span>
+        </h1>
+        <div class="tick tick--tc mono" aria-hidden="true"><div class="tick__track" data-tick="tc"></div></div>
+
+        <p class="hero__inside mono" aria-hidden="true">Keep scrolling. You're inside the work.</p>
+      </div>
+    </section>
+
+    <!-- ============ 2. WORK: films on a ring, letters behind ============ -->
+    <section class="work" id="work" aria-labelledby="work-title" data-section="Work">
+      <div class="work__stage">
+        <h2 class="sr-only" id="work-title">Selected work</h2>
+        <div class="work__scale"><div class="work__scene">
+          <div class="drum drum--letters" aria-hidden="true"></div>
+          <div class="drum drum--ring"></div>
+        </div></div>
+        <div class="work__now mono" aria-live="polite"><span id="nowIdx">01 / 12</span><b id="nowTitle">Aloya Festival</b><span id="nowKind">Event recap</span></div>
+        <p class="work__hint mono">Press a film to watch it with sound</p>
+      </div>
+      <ul class="work__list" aria-label="All films"></ul>
+    </section>
+
+    <!-- ============ 3. Made with ============ -->
+    <section class="made" aria-labelledby="made-title" data-section="Made with">
+      <h2 class="label mono" id="made-title">Made with</h2>
+      <ul class="made__icons">
+        <li><img src="assets/icons/obge-global.png" alt="Obge Global" width="88" height="88" loading="lazy" /></li>
+        <li><img src="assets/icons/aloya-festival.png" alt="Aloya Festival" width="88" height="88" loading="lazy" /></li>
+        <li><img src="assets/icons/societe-sat.png" alt="Société des arts technologiques (SAT)" width="88" height="88" loading="lazy" /></li>
+        <li><img src="assets/icons/whatsupmontreal.png" alt="What's Up Montréal" width="88" height="88" loading="lazy" /></li>
+        <li><img src="assets/icons/en-marge.png" alt="En Marge" width="88" height="88" loading="lazy" /></li>
+        <li><img src="assets/icons/academie-sante-sourire.png" alt="Académie Santé Sourire" width="88" height="88" loading="lazy" /></li>
+      </ul>
+      <p class="made__note serif">Festivals, venues, causes, and the brands around them. Made mainly for Instagram Reels.</p>
+    </section>
+
+    <!-- ============ 4. Misconceptions ============ -->
+    <section class="myths" aria-labelledby="myths-title" data-section="Ads">
+      <h2 class="myths__title" id="myths-title"><span class="anton">Your audience can smell an ad.</span><span class="serif"><i>So I make the ones they'd watch anyway.</i></span></h2>
+      <ol class="myths__list">
+        <li><s class="mono">People skip branded content.</s><b class="anton">They skip ads, not brands.</b><p>People watch videos that tell them a story, teach them something useful or make them feel something, even with a brand in them. Your brand just has to earn its place in the video.</p></li>
+        <li><s class="mono">Premium video needs a film crew.</s><b class="anton">It needs the right person.</b><p>What makes a video feel premium is decided before the camera rolls: the hook, the framing, the light, the pacing, the sound. That's experience, and it's exactly what you're investing in.</p></li>
+        <li><s class="mono">If it looks good, it will sell.</s><b class="anton">Strategy is what sells.</b><p>A beautiful video still needs the right hook, the right message and a reason to act. Every video I make, for my page or for yours, is planned around what your audience needs to see before they buy.</p></li>
+      </ol>
+    </section>
+
+    <!-- ============ 5. Breakdown ============ -->
+    <section class="bd" id="breakdown" aria-labelledby="bd-title" data-section="Breakdown">
+      <div class="bd__head">
+        <p class="label mono">How I learn</p>
+        <h2 class="anton bd__title" id="bd-title">I break down<br />every video<br />I make.</h2>
+        <p class="bd__intro serif">After every video, I study what worked and what didn't: the hook, the pacing, where people dropped off. Here's one, beat by beat. On your project, I apply those lessons in whatever style fits your brand.</p>
+      </div>
+      <div class="bd__body">
+        <figure class="bd__player" data-video="storytelling1" data-cursor="sound">
+          <figcaption class="mono">The Art of Asking <span>75K views</span></figcaption>
+        </figure>
+        <ol class="bd__beats">
+          <li data-from="0" data-to="10"><span class="mono">0–10 s</span><b class="anton">Hook with proof</b><p>"I may or may not have gotten free Fast Passes…" A risky claim, and the wristbands in hand right away, so the viewer has to see how.</p></li>
+          <li data-from="10" data-to="22"><span class="mono">10–22 s</span><b class="anton">A villain everyone shares</b><p>$50 tickets, $80 Fast Passes, $10 water. One meme turns personal frustration into something every viewer relates to.</p></li>
+          <li data-from="22" data-to="33"><span class="mono">22–33 s</span><b class="anton">The lightbulb</b><p>Endless lines, then the realization: people leaving the park throw away valid passes. The plan is set up in one beat.</p></li>
+          <li data-from="33" data-to="53"><span class="mono">33–53 s</span><b class="anton">Real tension, real footage</b><p>Cold-approaching families at the exit, filmed handheld. Will it work? The viewer stays to find out.</p></li>
+          <li data-from="53" data-to="74"><span class="mono">53–73 s</span><b class="anton">Payoff, and a reason to share</b><p>Skipping the queues, bonus food passes, then a game-style stat screen (+4 Charisma) that ends it on a laugh.</p></li>
+        </ol>
+      </div>
+      <div class="bd__wave"><span class="mono">The real audio of the video</span><svg id="wave" viewBox="0 0 1000 70" preserveAspectRatio="none" aria-hidden="true"></svg></div>
+    </section>
+
+    <!-- ============ 6. Method ============ -->
+    <section class="method" aria-labelledby="method-title" data-section="Method">
+      <p class="label mono">How we work together</p>
+      <h2 class="method__title" id="method-title"><span class="anton">Creative instinct.</span> <span class="serif"><i>Scientific process.</i></span></h2>
+      <p class="method__intro">Start with an idea, figure out how to make it work, test it, fail, change something, try again. I learned it in research labs. Now I use it on your content.</p>
+      <ol class="method__steps">
+        <li><b class="anton">R</b><h3>Background research</h3><p>I study your brand, your audience, your competitors and what's already working on the platforms, so we start from what's known.</p></li>
+        <li><b class="anton">H</b><h3>Hypothesis</h3><p>A clear, testable bet: "If we open on X and tell it as Y, this audience will stay and act." Written down before anything is filmed.</p></li>
+        <li><b class="anton">E</b><h3>Experiment</h3><p>Plan, shoot and edit. Each concept is cut with different hooks, changing one variable at a time so the test is fair.</p></li>
+        <li><b class="anton">A</b><h3>Analyze</h3><p>Retention curves, watch time, saves, shares, comments. We look at what the numbers and the audience are actually saying.</p></li>
+        <li><b class="anton">C</b><h3>Conclusion</h3><p>Did the evidence support the bet? I share what worked, what didn't and why, in plain language.</p></li>
+        <li><b class="anton">I</b><h3>Iterate &amp; improve</h3><p>The next round starts from the winners. Every video makes the next one smarter.</p></li>
+      </ol>
+    </section>
+
+    <!-- ============ 7. Services ============ -->
+    <section class="sv" id="services" aria-labelledby="sv-title" data-section="Services">
+      <p class="label mono">Work with me</p>
+      <h2 class="anton sv__title" id="sv-title">Ways to work<br />with me.</h2>
+      <p class="sv__intro serif">Most of what I do is for brands. I also help creators and business owners who want to make better content themselves.</p>
+      <ul class="sv__list">
+        <li data-preview="storytelling3"><span class="mono">Sponsored / PR / Affiliate</span><h3 class="anton">Get featured</h3><p>Your product or place becomes part of one of my Instagram videos, used the way I'd actually use it. As a paid sponsorship, a PR collaboration, or an affiliate deal where I earn on the sales I bring in.</p><a href="#book" class="mono u">Get featured</a></li>
+        <li data-preview="edits2"><span class="mono">One-time project</span><h3 class="anton">Brand film</h3><p>You tell me what you want people to feel. I write the concept, plan the shoot, film it and edit it. You approve the plan and the final cut, and I handle everything in between.</p><a href="#book" class="mono u">Plan a brand film</a></li>
+        <li data-preview="edits1"><span class="mono">On location</span><h3 class="anton">Event coverage</h3><p>Festivals, launches, openings. I film the day as a story, post it on my channels, and give you a recap and clips to use on yours.</p><a href="#book" class="mono u">Book event coverage</a></li>
+        <li data-preview="vibeyvlog3"><span class="mono">Retainer</span><h3 class="anton">Monthly content</h3><p>I study your brand, your audience and your competitors, then build a content plan around your story. Each month I film and edit a set of videos, and we look at what worked before planning the next ones.</p><a href="#book" class="mono u">Start monthly content</a></li>
+        <li data-preview="storytelling2"><span class="mono">For creators &amp; business owners</span><h3 class="anton">1:1 content coaching</h3><p>We look at your page together: your videos, your hooks, how you talk to your community and what's working in your space. You leave with a clear plan.</p><a href="#book" class="mono u">Book a session</a></li>
+      </ul>
+      <div class="sv__preview" aria-hidden="true"><img alt="" /></div>
+      <ul class="sv__incl mono" aria-label="Included in every project">
+        <li>48–72h first cut</li><li>2 revision rounds</li><li>3 hook versions per video</li><li>Replies within a day</li><li>A free call with 3 ideas before you commit</li>
+      </ul>
+      <div class="sv__founding">
+        <div class="sv__q" aria-hidden="true"><span>?</span><span>?</span><span>?</span></div>
+        <div>
+          <h3 class="mono">Founding Brand Partners</h3>
+          <p>I'm choosing 3 brands for my first long-term partnerships, at founding rates and with my full attention. In return, I get to share our results. Could the next icon be yours?</p>
+          <p class="dim">Every project is priced to fit. Book a free call and we'll find the best deal for both of us.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 8. The letter ============ -->
+    <section class="letter" id="letter" aria-labelledby="letter-title" data-section="The letter">
+      <p class="label mono" id="letter-title">A letter, not a pitch</p>
+      <div class="letter__body serif">
+        <p class="letter__to"><i>Dear brand,</i></p>
+        <p>I never really set out to become a content creator. I've always just liked creating things.</p>
+        <p>When I was younger, it was drawings and paintings. Then I got into science and research. I loved that you could start with an idea, figure out how to make it work, test it, fail, change something, and try again.</p>
+        <p>That way of thinking ended up following me everywhere.</p>
+        <p>I started making science projects. I got involved in research. I played sports, organized events, travelled, joined student leadership organizations, and somehow always found another project to start.</p>
+        <p>Eventually, I started filming it.</p>
+        <p>At first, it was just because I wanted to remember these moments. But I also realized that I loved the process of turning something that happened in real life into a story that someone else would also want to watch and take inspiration from.</p>
+        <p>That became the videos I created.</p>
+        <p>A research project. A random trip with friends. Trying a new sport. Exploring Montréal. Going to an event. Building something from scratch.</p>
+        <p>I film the things I'm genuinely curious about, and I think that's why people connect with it. I'm not trying to look like I have life figured out. I'm a student trying things, making mistakes, meeting people, and trying to build something great to positively impact my environment.</p>
+        <p>Then something unexpected happened.</p>
+        <p>People started asking me to make videos for them.</p>
+        <p>Brands, businesses, events, restaurants and other creators started seeing the same thing I was doing for myself and asking, "We love your work! Can you do that for us?"</p>
+        <p>That's how this became more than just my personal content.</p>
+        <p>Today, I see what I do as sitting somewhere between a creator and a creative marketing studio.</p>
+        <p>On one side, I make content around my own life and build an audience that trusts my taste. On the other, I work directly with brands to turn their ideas, products and experiences into videos people actually want to watch.</p>
+        <p>And I think doing both makes me better at each.</p>
+        <p>When I'm making my own content, I learn what makes a real person stop scrolling, keep watching, and actually care.</p>
+        <p>When I'm working with a brand, I get to take that knowledge and apply it to their story.</p>
+        <p>I don't believe good branded content should feel like an advertisement with a creator standing in front of it.</p>
+        <p>It should feel like something you would have watched anyway.</p>
+        <p>That's the standard I try to bring to everything I make. I want the content to feel natural enough that my audience trusts it, but intentional enough that a brand knows why it is working.</p>
+        <p>So, ready to build something iconic that actually converts?</p>
+        <p>Let's collaborate! <a href="#book" class="u">Book a call</a> or shoot me an email at <a class="u" href="mailto:keyuhu.ca@gmail.com">keyuhu.ca@gmail.com</a> to pitch your project.</p>
+        <p class="letter__sign"><i>Keyu</i></p>
+      </div>
+      <ul class="letter__facts">
+        <li><b class="anton">18</b>and already filming for festivals &amp; brands</li>
+        <li><b class="anton">Montréal</b>shooting wherever the idea takes me</li>
+        <li><b class="anton">EN / FR / 中文</b>I speak English, French &amp; Mandarin</li>
+        <li><b class="anton">Nymeris</b>founded it: two sold-out collections</li>
+        <li><b class="anton">IRIC, UdeM</b>research intern, cancer biology</li>
+        <li><b class="anton">Cultural Affairs</b>led it for my student union</li>
+        <li><b class="anton">Dean's List</b>Health Science at Marianopolis</li>
+        <li><b class="anton">The team</b>never a solo act: I work with a great team</li>
+      </ul>
+    </section>
+
+    <!-- ============ 9. Proof ============ -->
+    <section class="proof" aria-labelledby="proof-title" data-section="Proof">
+      <p class="label mono">Why trust me</p>
+      <h2 class="anton proof__title" id="proof-title">Trained in a lab.<br />Sharpened on the feed.</h2>
+      <div class="proof__grid">
+        <div class="proof__file">
+          <p class="mono sky">Project file / VisionnAIre</p>
+          <h3 class="serif">I built a low-cost AI that detects eye disease. I make videos the same way.</h3>
+          <p>2.2 billion people live with visual impairment, and about 1 billion of those cases could have been prevented. The bottleneck is access: expensive equipment, too few specialists, slow diagnosis. So I designed an ultra-low-cost portable retinal camera prototype, built the datasets, trained convolutional neural networks to read eye images, and made an app to go with it.</p>
+          <dl class="proof__stats">
+            <div><dt class="anton">97%+</dt><dd>accuracy</dd></div>
+            <div><dt class="anton">8</dt><dd>major eye diseases detected, plus healthy eyes</dd></div>
+            <div><dt class="anton">10+</dt><dd>awards and honours, including Gold at the Canada-Wide Science Fair</dd></div>
+          </dl>
+        </div>
+        <ol class="proof__lessons">
+          <li><h3 class="anton">Start with the problem, not the tool.</h3><p>VisionnAIre started from a question: why do a billion people lose sight they could have kept? The AI came after. On your content, I start from what your customers care about, then decide what to film.</p></li>
+          <li><h3 class="anton">Test small before you go big.</h3><p>A prototype is never right the first time. I try different hooks and cuts before we put a budget behind one version.</p></li>
+          <li><h3 class="anton">Let the results tell you when you're wrong.</h3><p>A model is only as good as its data. Watch time and drop-off show exactly where a video loses people, so the next one is better.</p></li>
+          <li><h3 class="anton">Make it clear in seconds.</h3><p>At science fairs, judges give you a few minutes. On Instagram you get a few seconds. Every video has to make sense right away.</p></li>
+        </ol>
+      </div>
+      <div class="proof__recog">
+        <p class="label mono">Recognized by national &amp; provincial awards, TV and radio</p>
+        <ul class="proof__dock">
+          <li><img src="assets/icons/cwsf.png" alt="Canada-Wide Science Fair" width="72" height="72" loading="lazy" /></li>
+          <li><img src="assets/icons/youth-can-innovate.png" alt="Youth Can Innovate" width="72" height="72" loading="lazy" /></li>
+          <li><img src="assets/icons/canadian-nuclear-laboratories.png" alt="Canadian Nuclear Laboratories" width="72" height="72" loading="lazy" /></li>
+          <li><img src="assets/icons/adriq.png" alt="ADRIQ" width="72" height="72" loading="lazy" /></li>
+          <li><img src="assets/icons/octas.png" alt="OCTAS" width="72" height="72" loading="lazy" /></li>
+          <li><img src="assets/icons/reseau-technosciences.png" alt="Réseau Technoscience" width="72" height="72" loading="lazy" /></li>
+          <li><img src="assets/icons/iric-udem.png" alt="IRIC, Université de Montréal" width="72" height="72" loading="lazy" /></li>
+          <li><img src="assets/icons/tele-quebec.png" alt="Télé-Québec" width="72" height="72" loading="lazy" /></li>
+          <li><img src="assets/icons/radio-canada.png" alt="Radio-Canada" width="72" height="72" loading="lazy" /></li>
+        </ul>
+      </div>
+      <div class="proof__ny">
+        <p class="mono sky">I've been on your side too</p>
+        <h3 class="serif">I know what a brand needs from content, because I ran one.</h3>
+        <p>I founded Nymeris, a student clothing brand, and led a team of 11 through design, branding and two launches. Both collections sold out. So when we work together, I think about what the video has to do for your business, not only how it looks.</p>
+        <dl class="proof__stats proof__stats--sm"><div><dt class="anton">2</dt><dd>collections sold out</dd></div><div><dt class="anton">11</dt><dd>people led</dd></div></dl>
+      </div>
+    </section>
+
+    <!-- ============ 10. FAQ ============ -->
+    <section class="faq" id="faq" aria-labelledby="faq-title" data-section="Questions">
+      <p class="label mono">Questions brands ask before we collab</p>
+      <h2 class="anton faq__title" id="faq-title">Objections,<br />handled.</h2>
+      <div class="faq__list">
+        <details><summary>Who are you, and why should I trust you with my brand?</summary><p>I'm Keyu, a creator and editor based in Montréal. I started filming on an iPhone 13 and taught myself everything from framing to colour grading. Since then I've made videos for festivals, venues and causes, won national awards for my research, and built a clothing brand that sold out twice. The best way to judge is the work above, and the first call is free.</p></details>
+        <details><summary>Will it look like an ad?</summary><p>No, and that's the point. Every video is made to be worth watching on its own: it tells a story, teaches something useful or makes people feel something. I plan the hook, the pacing and the message around how people actually watch, and your product comes in the way I'd really use it. It still says exactly what you need it to say, and you'll know why it works.</p></details>
+        <details><summary>Do you help with strategy, or only make videos?</summary><p>Strategy comes first. Before filming, I look at your audience, your competitors and what's performing in your space, then plan the hooks and formats. After posting, we look at watch time and comments to make the next video better.</p></details>
+        <details><summary>What do you need from us to get started?</summary><p>A short call to understand your brand, your audience and what you want people to do after watching. I handle the rest: concept, plan, filming and editing. You approve the plan before I shoot and the cut before anything goes live.</p></details>
+        <details><summary>How fast is the first cut?</summary><p>Two to three business days after filming. Launching tomorrow? Ask about a 24h rush.</p></details>
+        <details><summary>What if I don't like the edit?</summary><p>Every video includes two rounds of revisions. Most land in one, because we agree on the hook and structure before I start editing.</p></details>
+        <details><summary>Can you film, or do you only edit?</summary><p>Both. I can edit footage you send me, or come film in and around Montréal. Most of my work is shot and edited by me, with a small team I trust for bigger shoots.</p></details>
+        <details><summary>Do you work with creators too?</summary><p>Yes. If you want to make better content yourself, I offer content coaching. It's listed in the offers above.</p></details>
+        <details><summary>Which platforms and languages?</summary><p>Mainly Instagram. Videos are made vertical-first, so they also work on TikTok and YouTube Shorts. I speak English, French and Mandarin, so we can work in whichever you prefer.</p></details>
+      </div>
+    </section>
+
+    <!-- ============ 11. Contact ============ -->
+    <section class="book" id="book" aria-labelledby="book-title" data-section="Contact">
+      <p class="label mono">3 partnership spots for <span data-month>next month</span></p>
+      <h2 class="anton book__title" id="book-title">Let's build<br />something<br />iconic.</h2>
+      <div class="book__row">
+        <a class="book__btn anton" href="#book" data-book-main>Book a free call</a>
+        <p>A free 20-minute call to see if we're a fit. I'll bring 3 ideas for how your brand could show up in my content, whether we work together or not.</p>
+      </div>
+      <p class="book__mail serif"><i>or pitch your project:</i> <a href="mailto:keyuhu.ca@gmail.com">keyuhu.ca@gmail.com</a></p>
+      <p class="book__note mono">I partner with a maximum of 4 brands at a time, so every collab gets real attention.</p>
+    </section>
+  </main>
+
+  <footer class="foot mono">
+    <a href="#top" class="foot__mark"><small>BY</small> KEYU</a>
+    <span>Visual storyteller, content strategist &amp; editor</span>
+    <a href="mailto:keyuhu.ca@gmail.com">keyuhu.ca@gmail.com</a>
+    <a href="#top">Back to top</a>
+    <span class="dim">Montréal, <span data-year>2026</span></span>
+  </footer>
+
+  <!-- Film player -->
+  <dialog class="film" id="film" aria-labelledby="filmTitle">
+    <button class="film__close mono" type="button" data-close>Close</button>
+    <div class="film__media"><video playsinline controls preload="none"></video></div>
+    <div class="film__info">
+      <p class="mono" id="filmMeta"></p>
+      <h2 class="anton" id="filmTitle"></h2>
+      <p class="serif film__line" id="filmLine"></p>
+      <dl class="film__notes" id="filmNotes"></dl>
+      <a href="#book" class="film__cta anton">Picture your brand in one of these</a>
+    </div>
+  </dialog>
+
+  <script src="vendor/lenis.min.js"></script>
+  <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
