@@ -43,6 +43,14 @@ const ss = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0)); return t * t 
 const pad = (n, l = 2) => String(n).padStart(l, "0");
 const root = document.documentElement;
 if (reduce) root.classList.add("flat", "no-reveal");
+/* GSAP + ScrollTrigger drive every scroll scene; without them (or with reduced motion) the page is a plain, fully visible layout */
+const G = window.gsap, ST = window.ScrollTrigger;
+const motion = !reduce && !!(G && ST);
+if (motion) {
+  G.registerPlugin(ST);
+  ST.config({ ignoreMobileResize: true });
+  root.classList.add("motion");
+}
 
 /* ---------- small facts: month, year, Montréal clock ---------- */
 const next = new Date(); next.setMonth(next.getMonth() + 1);
@@ -56,8 +64,15 @@ tickClock(); setInterval(tickClock, 20000);
 let lenis = null;
 if (!reduce && window.Lenis) {
   lenis = new window.Lenis({ lerp: 0.1, smoothWheel: true });
-  const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
-  requestAnimationFrame(raf);
+  if (motion) {
+    // one clock: GSAP's ticker drives Lenis, and Lenis tells ScrollTrigger when it moved
+    lenis.on("scroll", ST.update);
+    G.ticker.add((t) => lenis.raf(t * 1000));
+    G.ticker.lagSmoothing(0);
+  } else {
+    const raf = (t) => { lenis.raf(t); requestAnimationFrame(raf); };
+    requestAnimationFrame(raf);
+  }
 }
 const scrollToEl = (target) => {
   if (lenis) lenis.scrollTo(target, { offset: 0 });
@@ -206,9 +221,11 @@ const heroLoop = (time) => {
       });
     }
   }
-  document.body.classList.toggle("past-hero", r.bottom < innerHeight * 0.5);
-  const wr = work.getBoundingClientRect();
-  document.body.classList.toggle("in-work", wr.top < innerHeight * 0.5 && wr.bottom > innerHeight * 0.5);
+  if (!motion) {
+    document.body.classList.toggle("past-hero", r.bottom < innerHeight * 0.5);
+    const wr = work.getBoundingClientRect();
+    document.body.classList.toggle("in-work", wr.top < innerHeight * 0.5 && wr.bottom > innerHeight * 0.5);
+  }
   requestAnimationFrame(heroLoop);
 };
 
@@ -258,9 +275,8 @@ const cardVideo = (c) => {
   c.video = v; return v;
 };
 let frontIdx = -1;
-const updateWork = () => {
+const updateWork = (p = sectionProgress(work)) => {
   if (reduce) return;
-  const p = sectionProgress(work);
   const ringA = 18 - p * 372, lettersA = 8 - p * 372 * 0.55;
   ring.style.transform = `translateZ(-2350px) rotateX(-3deg) rotateZ(-4deg) rotateY(${ringA}deg)`;
   letters.style.transform = `translateZ(-2350px) rotateX(-3deg) rotateZ(-4deg) rotateY(${lettersA}deg)`;
@@ -306,6 +322,104 @@ $("[data-close]", film).addEventListener("click", closeFilm);
 film.addEventListener("click", (e) => { if (e.target === film) closeFilm(); });
 $(".film__cta", film).addEventListener("click", closeFilm);
 
+/* ---------- helpers for the scroll scenes ---------- */
+// wrap every word of an element's text in spans, keeping links and italics intact
+const splitWords = (el, cls = "w") => {
+  const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach((n) => {
+    const parts = n.textContent.split(/([ \t\n\r]+)/);   // no-break spaces stay inside a word
+    const frag = document.createDocumentFragment();
+    parts.forEach((pt) => {
+      if (!pt) return;
+      if (/^[ \t\n\r]+$/.test(pt)) { frag.appendChild(document.createTextNode(" ")); return; }
+      const o = document.createElement("span");
+      o.className = cls;
+      if (cls === "w") { const i = document.createElement("span"); i.className = "wi"; i.textContent = pt; o.appendChild(i); }
+      else o.textContent = pt;
+      frag.appendChild(o);
+    });
+    n.replaceWith(frag);
+  });
+  return el;
+};
+if (motion) $$("[data-split]").forEach((el) => splitWords(el));
+const whenIn = (trigger, start = "top 82%") => ({ trigger, start, toggleActions: "play none none reverse" });
+
+/* ---------- body classes and the corner labels ---------- */
+if (motion) {
+  ST.create({ trigger: hero, start: "bottom 50%", end: () => "+=" + document.documentElement.scrollHeight,
+    onEnter: () => document.body.classList.add("past-hero"), onLeaveBack: () => document.body.classList.remove("past-hero") });
+  ST.create({ trigger: work, start: "top 50%", end: "bottom 50%", toggleClass: { targets: document.body, className: "in-work" } });
+  ST.create({ trigger: work, start: "top bottom", end: "bottom top",
+    onUpdate: () => updateWork(),
+    onToggle: (s) => { if (!s.isActive) cards.forEach((c) => c.video && c.video.pause()); },
+    onRefresh: () => updateWork() });
+  $$("[data-section]").forEach((sec) => ST.create({ trigger: sec, start: "top 50%", end: "bottom 50%",
+    onToggle: (s) => { if (s.isActive) $("#cnSection").textContent = sec.dataset.section; } }));
+  const prog = $("#cnProgress");
+  ST.create({ start: 0, end: "max", onUpdate: (s) => (prog.textContent = pad(Math.round(s.progress * 100)) + "%") });
+} else {
+  window.addEventListener("scroll", () => updateWork(), { passive: true });
+}
+
+/* ---------- headings: words rise out of a mask ---------- */
+if (motion) {
+  $$(".bd__title, .sv__title, .faq__title, .proof__title").forEach((h) =>
+    G.from($$(".wi", h), { yPercent: 115, rotate: 4, duration: 1.05, ease: "expo.out", stagger: 0.05, scrollTrigger: whenIn(h) }));
+  $$(".label").forEach((l) => { if (!l.closest(".made, .myths, .bd, .method, .proof__stage, .letter__side, .book")) G.from(l, { opacity: 0, x: -20, duration: 0.8, ease: "power3.out", scrollTrigger: whenIn(l, "top 92%") }); });
+}
+
+/* ---------- 3. made with: a marquee that speeds up and turns with the scroll ---------- */
+(() => {
+  const track = $(".marq__track");
+  if (motion) [...track.children].forEach((li) => { const c = li.cloneNode(true); c.setAttribute("aria-hidden", "true"); track.appendChild(c); });
+  $$("li:not([aria-hidden]) img", track).forEach((img) => (img.alt = img.dataset.alt || img.nextElementSibling.textContent));
+  $$("li[aria-hidden] img", track).forEach((img) => (img.alt = ""));
+  if (!motion) return;
+  const loop = G.to(track, { xPercent: -50, ease: "none", duration: 34, repeat: -1 });
+  loop.totalTime(34 * 50);   // far from zero, so it can also run backwards
+  let boost = 0, dir = 1, live = false;
+  const skew = G.quickSetter(track, "skewX", "deg");
+  ST.create({ trigger: ".made", start: "top bottom", end: "bottom top",
+    onToggle: (s) => { live = s.isActive; live ? loop.play() : loop.pause(); },
+    onUpdate: (s) => { dir = s.direction; boost = Math.min(6, Math.abs(s.getVelocity()) / 260); } });
+  G.ticker.add(() => {
+    if (!live) return;
+    boost *= 0.93;
+    const ts = loop.timeScale();
+    loop.timeScale(ts + (dir * (1 + boost) - ts) * 0.12);
+    skew(-dir * boost * 1.4);
+  });
+  G.from(".made__head > *", { opacity: 0, y: 24, duration: 0.9, ease: "power3.out", stagger: 0.1, scrollTrigger: whenIn(".made") });
+  G.from(".marq", { clipPath: "inset(0 50% 0 50%)", duration: 1.3, ease: "expo.inOut", scrollTrigger: whenIn(".marq", "top 88%") });
+})();
+
+/* ---------- 4. myths: struck through one by one, replaced by the truth ---------- */
+if (motion) {
+  const title = $(".myths__title");
+  G.from($$(".anton .wi", title), { yPercent: 115, duration: 1.1, ease: "expo.out", stagger: 0.06, scrollTrigger: whenIn(".myths", "top 60%") });
+  G.from($(".serif", title), { opacity: 0, y: 30, duration: 1, delay: 0.35, ease: "power3.out", scrollTrigger: whenIn(".myths", "top 60%") });
+  const tl = G.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: ".myths", start: "top top", end: "bottom bottom", scrub: 0.7 } });
+  tl.to({}, { duration: 0.8 })
+    .to(title, { yPercent: -18, opacity: 0, duration: 0.8, ease: "power1.in" });
+  const items = $$(".myths__list li");
+  items.forEach((li, i) => {
+    const myth = $(".myths__myth", li), strike = $(".strike", li), words = $$(".wi", li), line = $(".myths__line", li), n = $(".myths__n", li), big = $(".myths__big", li);
+    tl.set(li, { visibility: "visible" }, i ? "-=0.12" : ">")
+      .from(big, { opacity: 0, yPercent: 40, duration: 1, ease: "power2.out" }, "<")
+      .from([n, myth], { opacity: 0, y: 50, duration: 0.6, stagger: 0.12, ease: "power2.out" }, "<")
+      .from(strike, { scaleX: 0, duration: 0.7, ease: "power2.inOut" })
+      .to(myth, { opacity: 0.38, duration: 0.3 })
+      .from(words, { yPercent: 118, duration: 1, stagger: 0.12, ease: "power3.out" }, "<")
+      .from(line, { opacity: 0, y: 24, duration: 0.5 })
+      .to({}, { duration: 1.1 });
+    if (i < items.length - 1) tl.to(li, { opacity: 0, yPercent: -10, duration: 0.6, ease: "power1.in" })
+      .to(big, { yPercent: -80, duration: 0.6, ease: "power1.in" }, "<");
+  });
+}
+
 /* ---------- inline videos with sound on press (the breakdown player) ---------- */
 const startVideo = (v) => {
   if (!v.src && v.dataset.src) { v.preload = "auto"; v.src = v.dataset.src; }
@@ -321,7 +435,7 @@ $$("figure[data-video]").forEach((fig) => {
   const badge = document.createElement("span");
   badge.className = "snd"; badge.innerHTML = `<span class="off">${canHover ? "Press" : "Tap"} for sound</span><span class="on">Sound on</span>`;
   fig.appendChild(badge);
-  fig.setAttribute("role", "button"); fig.tabIndex = 0; fig.setAttribute("aria-label", "Play with sound");
+  fig.setAttribute("role", "button"); fig.tabIndex = 0; fig.setAttribute("aria-label", "Play The Art of Asking with sound");
   new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting && !reduce) startVideo(v); else if (!e.isIntersecting) { v.pause(); v.muted = true; fig.classList.remove("is-sound"); } }), { threshold: 0.25 }).observe(fig);
   const toggle = () => { v.muted = !v.muted; startVideo(v); fig.classList.toggle("is-sound", !v.muted); };
   fig.addEventListener("click", toggle);
@@ -329,53 +443,168 @@ $$("figure[data-video]").forEach((fig) => {
   if (name === "storytelling1") syncBreakdown(v);
 });
 
-/* beats light up with the video; pressing a beat jumps to it; the waveform is the real audio */
+/* ---------- 5. breakdown: scrolling steps through the beats, the video and the real waveform follow ---------- */
 function syncBreakdown(v) {
-  const beats = $$(".bd__beats li"), svg = $("#wave");
-  let dur = 74, head = null;
+  const beats = $$(".bd__beats li"), marks = $$(".bd__marks button"), svg = $("#wave");
+  const from = beats.map((b) => +b.dataset.from), END = 74;
+  let dur = END, cur = -1, clip = null, playhead = null, scene = null;
+  const beatAt = (t) => { let i = 0; from.forEach((f, j) => { if (t >= f) i = j; }); return i; };
+  const show = (i) => {
+    if (i === cur) return;
+    cur = i;
+    beats.forEach((b, j) => b.classList.toggle("is-on", j === i));
+    marks.forEach((m, j) => { m.classList.toggle("is-on", j === i); m.setAttribute("aria-pressed", String(j === i)); });
+  };
+  const seek = (i) => { show(i); if (v.readyState > 0) v.currentTime = from[i]; else v.addEventListener("loadedmetadata", () => (v.currentTime = from[i]), { once: true }); startVideo(v); };
+  show(0);
+
   fetch("assets/data/wave.json").then((r) => r.json()).then((w) => {
     const bw = 1000 / w.length;
-    svg.innerHTML = w.map((a, i) => { const h = Math.max(2, a * 64); return `<rect x="${(i * bw).toFixed(2)}" y="${(35 - h / 2).toFixed(1)}" width="${(bw * 0.6).toFixed(2)}" height="${h.toFixed(1)}" fill="rgba(233,228,216,.32)"/>`; }).join("")
-      + [0, 10, 22, 33, 53, 74].map((m) => `<line x1="${(m / 74) * 1000}" x2="${(m / 74) * 1000}" y1="0" y2="70" stroke="#A9C6E6" stroke-width="1" vector-effect="non-scaling-stroke" opacity=".6"/>`).join("")
+    const bars = w.map((a, i) => { const h = Math.max(2, a * 64); return `<rect x="${(i * bw).toFixed(2)}" y="${(35 - h / 2).toFixed(1)}" width="${(bw * 0.6).toFixed(2)}" height="${h.toFixed(1)}"/>`; }).join("");
+    svg.innerHTML = `<defs><clipPath id="wclip"><rect id="wcr" x="0" y="0" width="0" height="70"/></clipPath></defs>`
+      + `<g fill="rgba(233,228,216,.22)">${bars}</g><g fill="#A9C6E6" clip-path="url(#wclip)">${bars}</g>`
+      + from.concat(END).map((m) => `<line x1="${(m / END) * 1000}" x2="${(m / END) * 1000}" y1="0" y2="70" stroke="rgba(233,228,216,.35)" stroke-width="1" vector-effect="non-scaling-stroke"/>`).join("")
       + `<line id="ph" x1="0" x2="0" y1="-4" y2="74" stroke="#E9E4D8" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
-    head = $("#ph", svg);
+    clip = $("#wcr", svg); playhead = $("#ph", svg);
   }).catch(() => {});
-  v.addEventListener("loadedmetadata", () => (dur = v.duration || 74));
+  v.addEventListener("loadedmetadata", () => (dur = v.duration || END));
   v.addEventListener("timeupdate", () => {
     const t = v.currentTime;
-    beats.forEach((b) => b.classList.toggle("is-on", t >= +b.dataset.from && t < +b.dataset.to));
-    if (head) { const x = (t / dur) * 1000; head.setAttribute("x1", x); head.setAttribute("x2", x); }
+    show(beatAt(t));
+    if (playhead) { const x = (t / dur) * 1000; playhead.setAttribute("x1", x); playhead.setAttribute("x2", x); clip.setAttribute("width", x); }
   });
-  beats.forEach((b) => b.addEventListener("click", () => { startVideo(v); v.currentTime = +b.dataset.from; }));
+
+  if (motion) {
+    let scrollBeat = 0;
+    scene = ST.create({ trigger: ".bd", start: "top top", end: "bottom bottom",
+      onUpdate: (s) => { const i = Math.min(beats.length - 1, Math.floor(s.progress * beats.length)); if (i !== scrollBeat) { scrollBeat = i; seek(i); } } });
+    G.from([".bd__player", ".bd__beats", ".bd__wave"], { opacity: 0, y: 60, duration: 1.1, ease: "expo.out", stagger: 0.1, scrollTrigger: whenIn(".bd", "top 55%") });
+  }
+  const jump = (i) => {
+    if (scene) { const y = scene.start + ((i + 0.5) / beats.length) * (scene.end - scene.start); lenis ? lenis.scrollTo(y) : scrollTo(0, y); }
+    seek(i);
+  };
+  marks.forEach((m, i) => m.addEventListener("click", () => jump(i)));
+  beats.forEach((b, i) => b.addEventListener("click", () => seek(i)));
 }
 
-/* ---------- services: a poster follows the pointer ---------- */
+/* ---------- 6. method: the strip slides left, each letter fills as it passes ---------- */
+if (motion) {
+  const sec = $(".method"), track = $(".method__track");
+  const dist = () => Math.max(0, track.scrollWidth - innerWidth);
+  ST.addEventListener("refreshInit", () => (sec.style.height = innerHeight + dist() + "px"));
+  sec.style.height = innerHeight + dist() + "px";
+  const slide = G.to(track, { x: () => -dist(), ease: "none", scrollTrigger: { trigger: sec, start: "top top", end: "bottom bottom", scrub: 0.6, invalidateOnRefresh: true } });
+  G.to(".method__bar i", { scaleX: 1, ease: "none", scrollTrigger: { trigger: sec, start: "top top", end: "bottom bottom", scrub: 0.6 } });
+  $$(".method__step").forEach((step) => {
+    ST.create({ trigger: step, containerAnimation: slide, start: "left 78%",
+      onEnter: () => step.classList.add("is-on"), onLeaveBack: () => step.classList.remove("is-on") });
+    G.from(step.querySelectorAll("h3, p, .mono"), { y: 40, opacity: 0, stagger: 0.06, ease: "power2.out",
+      scrollTrigger: { trigger: step, containerAnimation: slide, start: "left 90%", end: "left 55%", scrub: true } });
+  });
+  const intro = $(".method__intro");
+  G.from(intro.children, { opacity: 0, y: 50, duration: 1.1, ease: "expo.out", stagger: 0.1, scrollTrigger: whenIn(sec, "top 55%") });
+}
+
+/* ---------- 7. services: names rise row by row; a poster follows the pointer ---------- */
+if (motion) {
+  $$(".sv__list li").forEach((li) => {
+    G.from($("h3 > span", li), { yPercent: 110, duration: 1, ease: "expo.out", scrollTrigger: whenIn(li, "top 92%") });
+    G.from($$(".sv__i, p, .sv__go", li), { opacity: 0, duration: 0.8, delay: 0.2, ease: "power2.out", scrollTrigger: whenIn(li, "top 92%") });
+  });
+  G.from(".sv__incl li", { opacity: 0, y: 16, duration: 0.6, stagger: 0.07, ease: "power2.out", scrollTrigger: whenIn(".sv__incl", "top 90%") });
+  G.from(".sv__q span", { opacity: 0, scale: 0.4, rotate: -25, duration: 0.9, stagger: 0.12, ease: "back.out(2)", scrollTrigger: whenIn(".sv__founding", "top 85%") });
+  G.from(".sv__ftxt, .sv__founding .btn", { opacity: 0, x: 40, duration: 1, stagger: 0.12, ease: "expo.out", scrollTrigger: whenIn(".sv__founding", "top 85%") });
+}
 (() => {
   const pv = $(".sv__preview"), img = $("img", pv);
   if (!canHover || reduce) return;
-  let x = 0, y = 0, tx = 0, ty = 0, on = false;
+  let x = 0, y = 0, tx = 0, ty = 0, on = false, run = false;
+  const loop = () => {
+    x += (tx - x) * 0.14; y += (ty - y) * 0.14;
+    pv.style.transform = `translate(${x}px, ${y}px) rotate(${(tx - x) * 0.04}deg)`;
+    if (on || Math.abs(tx - x) > 0.5) requestAnimationFrame(loop); else run = false;
+  };
   $$(".sv__list li").forEach((li) => {
-    li.addEventListener("mouseenter", () => { img.src = `assets/posters/${li.dataset.preview}.jpg`; on = true; pv.classList.add("is-on"); });
+    li.addEventListener("mouseenter", () => { img.src = `assets/posters/${li.dataset.preview}.jpg`; on = true; pv.classList.add("is-on"); if (!run) { run = true; requestAnimationFrame(loop); } });
     li.addEventListener("mouseleave", () => { on = false; pv.classList.remove("is-on"); });
   });
   window.addEventListener("mousemove", (e) => { tx = e.clientX + 28; ty = e.clientY - 140; }, { passive: true });
-  const loop = () => { x += (tx - x) * 0.14; y += (ty - y) * 0.14; if (on || pv.classList.contains("is-on")) pv.style.transform = `translate(${x}px, ${y}px) rotate(${(tx - x) * 0.04}deg)`; requestAnimationFrame(loop); };
-  loop();
 })();
 
-/* ---------- scroll-driven bits: letter, corners ---------- */
-const letterPs = $$(".letter__body p");
-const sections = $$("[data-section]");
-const onScroll = () => {
-  updateWork();
-  if (!reduce) letterPs.forEach((p) => p.classList.toggle("is-lit", p.getBoundingClientRect().top < innerHeight * 0.62));
-  const mid = innerHeight / 2;
-  const cur = sections.find((s) => { const r = s.getBoundingClientRect(); return r.top <= mid && r.bottom > mid; });
-  if (cur) $("#cnSection").textContent = cur.dataset.section;
-  const max = document.documentElement.scrollHeight - innerHeight;
-  $("#cnProgress").textContent = pad(Math.round((scrollY / Math.max(1, max)) * 100)) + "%";
-};
-window.addEventListener("scroll", onScroll, { passive: true });
+/* ---------- 8. the letter: every word lights up as you read ---------- */
+(() => {
+  const ps = $$(".letter__body p");
+  $("#letterAll").textContent = pad(ps.length);
+  if (!motion) return;
+  const now = $("#letterNow");
+  ps.forEach((p, i) => {
+    splitWords(p, "lw");
+    G.fromTo($$(".lw", p), { opacity: 0.13 }, { opacity: 1, ease: "none", stagger: 0.1,
+      scrollTrigger: { trigger: p, start: "top 80%", end: "bottom 52%", scrub: true,
+        onToggle: (s) => { if (s.isActive) now.textContent = pad(i + 1); } } });
+  });
+  ST.matchMedia({
+    "(min-width: 681px)": () => G.to(".letter__meter i", { scaleY: 1, ease: "none", scrollTrigger: { trigger: ".letter__body", start: "top 70%", end: "bottom 60%", scrub: true } }),
+    "(max-width: 680px)": () => G.to(".letter__meter i", { scaleX: 1, ease: "none", scrollTrigger: { trigger: ".letter__body", start: "top 70%", end: "bottom 60%", scrub: true } }),
+  });
+  G.from(".letter__facts li", { opacity: 0, y: 30, duration: 0.8, stagger: 0.07, ease: "power3.out", scrollTrigger: whenIn(".letter__facts", "top 90%") });
+})();
+
+/* ---------- 9. proof: the numbers count up ---------- */
+if (motion) {
+  const nums = $$(".proof__stats [data-count]");
+  nums.forEach((el) => (el.textContent = "0"));
+  const tl = G.timeline({ scrollTrigger: { trigger: ".proof__pin", start: "top 35%", end: "bottom bottom", scrub: 0.5 } });
+  nums.forEach((el, i) => {
+    const o = { v: 0 }, cell = el.closest("div");
+    tl.from(cell, { opacity: 0.12, y: 40, duration: 0.4, ease: "power2.out" }, i * 0.7)
+      .to(o, { v: +el.dataset.count, duration: 0.9, ease: "power2.out", onUpdate: () => (el.textContent = Math.round(o.v)) }, i * 0.7);
+  });
+  tl.to({}, { duration: 0.5 });
+  G.from(".proof__file", { opacity: 0, y: 30, duration: 1, ease: "power3.out", scrollTrigger: whenIn(".proof__file", "top 88%") });
+  G.from(".proof__dock li", { opacity: 0, y: 50, scale: 0.7, duration: 0.8, stagger: 0.06, ease: "back.out(1.7)", scrollTrigger: whenIn(".proof__dock", "top 88%") });
+  $$(".proof__mini [data-count]").forEach((el) => {
+    const o = { v: 0 }, n = +el.dataset.count;
+    el.textContent = "0";
+    G.to(o, { v: n, duration: 1.4, ease: "power3.out", onUpdate: () => (el.textContent = Math.round(o.v)), scrollTrigger: { trigger: ".proof__ny", start: "top 80%", toggleActions: "play none none none" } });
+  });
+  G.from(".proof__ny > *", { opacity: 0, y: 30, duration: 1, stagger: 0.1, ease: "power3.out", scrollTrigger: whenIn(".proof__ny", "top 85%") });
+}
+
+/* ---------- 10. faq: a tight accordion, one answer open at a time ---------- */
+(() => {
+  const all = $$(".faq__list details");
+  const close = (d) => {
+    const a = $(".faq__a", d);
+    if (!motion) { d.open = false; return; }
+    G.to(a, { height: 0, duration: 0.4, ease: "power2.inOut", onComplete: () => { d.open = false; a.style.height = ""; } });
+  };
+  all.forEach((d) => {
+    $("summary", d).addEventListener("click", (e) => {
+      e.preventDefault();
+      if (d.open) { close(d); return; }
+      all.forEach((o) => o !== d && o.open && close(o));
+      d.open = true;
+      if (motion) G.fromTo($(".faq__a", d), { height: 0 }, { height: "auto", duration: 0.5, ease: "power3.out", onComplete: () => ($(".faq__a", d).style.height = "") });
+    });
+  });
+  if (motion) G.from(all, { opacity: 0, y: 24, duration: 0.7, stagger: 0.05, ease: "power2.out", scrollTrigger: whenIn(".faq__list", "top 85%") });
+})();
+
+/* ---------- 11. contact: the last words slam in, the button pulls toward the pointer ---------- */
+if (motion) {
+  const lines = $$(".book__l");
+  const tl = G.timeline({ scrollTrigger: whenIn(".book", "top 62%") });
+  lines.forEach((l, i) => tl.from($$(".wi", l), { yPercent: 120, rotate: i % 2 ? -5 : 5, duration: 1.2, ease: "expo.out", stagger: 0.05 }, i * 0.12));
+  tl.from([".book .label", ".book__side > *"], { opacity: 0, y: 30, duration: 0.9, stagger: 0.08, ease: "power3.out" }, 0.45);
+  G.fromTo(".book__title", { scale: 0.94 }, { scale: 1, ease: "none", transformOrigin: "left bottom", scrollTrigger: { trigger: ".book", start: "top bottom", end: "top top", scrub: true } });
+  if (canHover) {
+    const btn = $(".book .btn"), qx = G.quickTo(btn, "x", { duration: 0.5, ease: "power3.out" }), qy = G.quickTo(btn, "y", { duration: 0.5, ease: "power3.out" });
+    btn.addEventListener("mousemove", (e) => { const r = btn.getBoundingClientRect(); qx((e.clientX - r.left - r.width / 2) * 0.25); qy((e.clientY - r.top - r.height / 2) * 0.35); });
+    btn.addEventListener("mouseleave", () => { qx(0); qy(0); });
+  }
+}
 
 /* ---------- cursor ---------- */
 (() => {
@@ -419,9 +648,10 @@ document.addEventListener("click", (e) => {
 });
 
 /* ---------- boot ---------- */
-const onResize = () => { measure(); fitGiant(); scaleWork(); head?.resize(); onScroll(); };
+const onResize = () => { measure(); fitGiant(); scaleWork(); head?.resize(); if (!motion) updateWork(); };
 buildWork();
-document.fonts?.ready.then(onResize);
+document.fonts?.ready.then(() => { onResize(); if (motion) ST.refresh(); });
 window.addEventListener("resize", onResize);
 onResize();
+if (motion) window.addEventListener("load", () => ST.refresh());
 requestAnimationFrame(heroLoop);
