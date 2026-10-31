@@ -248,7 +248,7 @@ const buildWork = () => {
     el.className = "card"; el.tabIndex = 0; el.setAttribute("role", "button");
     el.setAttribute("aria-label", `Watch ${f.t}, ${f.k}`);
     el.style.cssText = `width:${w}px;height:${h + 44}px;margin:${-(h + 44) / 2}px 0 0 ${-w / 2}px`;
-    el.innerHTML = `<div class="card__media" style="background-image:url(assets/posters/${f.id}.jpg)"></div><div class="card__lab"><span>${f.t}</span><span>${pad(i + 1)}/${FILMS.length}</span></div>`;
+    el.innerHTML = `<div class="card__media" style="background-image:url(assets/posters/${f.id}.jpg)"></div><div class="card__lab">${f.t}</div>`;
     el.addEventListener("click", () => openFilm(i));
     el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openFilm(i); } });
     ring.appendChild(el);
@@ -364,20 +364,27 @@ if (motion) {
   window.addEventListener("scroll", () => updateWork(), { passive: true });
 }
 
-/* ---------- headings: words rise out of a mask ---------- */
+/* ---------- the one section entry: the label's hairline wipes in, then the heading's words rise out of a mask ---------- */
 if (motion) {
-  $$(".bd__title, .sv__title, .faq__title, .proof__title").forEach((h) =>
-    G.from($$(".wi", h), { yPercent: 115, rotate: 4, duration: 1.05, ease: "expo.out", stagger: 0.05, scrollTrigger: whenIn(h) }));
-  $$(".label").forEach((l) => { if (!l.closest(".made, .myths, .bd, .method, .proof__stage, .letter__side, .book")) G.from(l, { opacity: 0, x: -20, duration: 0.8, ease: "power3.out", scrollTrigger: whenIn(l, "top 92%") }); });
+  $$("[data-enter]").forEach((head) => {
+    const label = $(".label", head), words = $$("[data-split] .wi", head);
+    const tl = G.timeline({ scrollTrigger: whenIn(head, "top 84%") });
+    if (label) {
+      tl.fromTo(label, { "--rule": 0 }, { "--rule": 1, duration: 1.3, ease: "expo.inOut" }, 0)
+        .from(label.children, { opacity: 0, x: -14, duration: 0.7, ease: "power3.out" }, 0.1);
+    }
+    if (words.length) tl.from(words, { yPercent: 118, rotate: 3, duration: 1.05, ease: "expo.out", stagger: 0.045 }, 0.18);
+    const rest = [...head.children].filter((el) => !el.matches(".label, h2, .letter__count, .letter__meter, .proof__stats") && !el.querySelector(".wi"));
+    if (rest.length) tl.from(rest, { opacity: 0, y: 22, duration: 0.8, ease: "power3.out", stagger: 0.08 }, 0.45);
+  });
+  $$(".label--plain").forEach((l) => G.from(l, { opacity: 0, y: 16, duration: 0.8, ease: "power3.out", scrollTrigger: whenIn(l, "top 90%") }));
 }
 
 /* ---------- 3. made with: a marquee that speeds up and turns with the scroll ---------- */
 (() => {
   const track = $(".marq__track");
-  if (motion) [...track.children].forEach((li) => { const c = li.cloneNode(true); c.setAttribute("aria-hidden", "true"); track.appendChild(c); });
-  $$("li:not([aria-hidden]) img", track).forEach((img) => (img.alt = img.dataset.alt || img.nextElementSibling.textContent));
-  $$("li[aria-hidden] img", track).forEach((img) => (img.alt = ""));
   if (!motion) return;
+  [...track.children].forEach((li) => { const c = li.cloneNode(true); c.setAttribute("aria-hidden", "true"); track.appendChild(c); });
   const loop = G.to(track, { xPercent: -50, ease: "none", duration: 34, repeat: -1 });
   loop.totalTime(34 * 50);   // far from zero, so it can also run backwards
   let boost = 0, dir = 1, live = false;
@@ -390,34 +397,35 @@ if (motion) {
     boost *= 0.93;
     const ts = loop.timeScale();
     loop.timeScale(ts + (dir * (1 + boost) - ts) * 0.12);
-    skew(-dir * boost * 1.4);
+    skew(-dir * boost * 1.1);
   });
-  G.from(".made__head > *", { opacity: 0, y: 24, duration: 0.9, ease: "power3.out", stagger: 0.1, scrollTrigger: whenIn(".made") });
-  G.from(".marq", { clipPath: "inset(0 50% 0 50%)", duration: 1.3, ease: "expo.inOut", scrollTrigger: whenIn(".marq", "top 88%") });
+  G.from(".marq li:not([aria-hidden])", { opacity: 0, y: 60, duration: 1, ease: "expo.out", stagger: 0.06, scrollTrigger: whenIn(".marq", "top 88%") });
 })();
 
 /* ---------- 4. myths: struck through one by one, replaced by the truth ---------- */
 if (motion) {
-  const title = $(".myths__title");
-  G.from($$(".anton .wi", title), { yPercent: 115, duration: 1.1, ease: "expo.out", stagger: 0.06, scrollTrigger: whenIn(".myths", "top 60%") });
-  G.from($(".serif", title), { opacity: 0, y: 30, duration: 1, delay: 0.35, ease: "power3.out", scrollTrigger: whenIn(".myths", "top 60%") });
-  const tl = G.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: ".myths", start: "top top", end: "bottom bottom", scrub: 0.7 } });
-  tl.to({}, { duration: 0.8 })
-    .to(title, { yPercent: -18, opacity: 0, duration: 0.8, ease: "power1.in" });
+  const title = $(".myths__title"), dots = $$(".myths__dots i");
+  G.set(".myths__dots", { opacity: 0 });
+  let marks = [];
+  const tl = G.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: ".myths", start: "top top", end: "bottom bottom", scrub: 0.6,
+    onUpdate: () => { const t = tl.time(); dots.forEach((d, j) => d.classList.toggle("is-on", t >= marks[j])); } } });
+  tl.to({}, { duration: 0.5 })
+    .to(title, { yPercent: -14, opacity: 0, duration: 0.6, ease: "power1.in" })
+    .to(".myths__dots", { opacity: 1, duration: 0.3 }, "<");
   const items = $$(".myths__list li");
   items.forEach((li, i) => {
-    const myth = $(".myths__myth", li), strike = $(".strike", li), words = $$(".wi", li), line = $(".myths__line", li), n = $(".myths__n", li), big = $(".myths__big", li);
-    tl.set(li, { visibility: "visible" }, i ? "-=0.12" : ">")
-      .from(big, { opacity: 0, yPercent: 40, duration: 1, ease: "power2.out" }, "<")
-      .from([n, myth], { opacity: 0, y: 50, duration: 0.6, stagger: 0.12, ease: "power2.out" }, "<")
-      .from(strike, { scaleX: 0, duration: 0.7, ease: "power2.inOut" })
-      .to(myth, { opacity: 0.38, duration: 0.3 })
-      .from(words, { yPercent: 118, duration: 1, stagger: 0.12, ease: "power3.out" }, "<")
-      .from(line, { opacity: 0, y: 24, duration: 0.5 })
-      .to({}, { duration: 1.1 });
-    if (i < items.length - 1) tl.to(li, { opacity: 0, yPercent: -10, duration: 0.6, ease: "power1.in" })
-      .to(big, { yPercent: -80, duration: 0.6, ease: "power1.in" }, "<");
+    const myth = $(".myths__myth", li), strike = $(".strike", li), words = $$(".wi", li), line = $(".myths__line", li), n = $(".myths__n", li);
+    tl.set(li, { visibility: "visible" }, i ? "-=0.1" : ">")
+      .addLabel("m" + i, "<")
+      .from([n, myth], { opacity: 0, y: 40, duration: 0.5, stagger: 0.08, ease: "power2.out" }, "<")
+      .from(strike, { scaleX: 0, duration: 0.5, ease: "power2.inOut" })
+      .to(myth, { opacity: 0.4, duration: 0.25 })
+      .from(words, { yPercent: 118, duration: 0.8, stagger: 0.08, ease: "power3.out" }, "<")
+      .from(line, { opacity: 0, y: 20, duration: 0.4 }, "-=0.3")
+      .to({}, { duration: 0.7 });
+    if (i < items.length - 1) tl.to(li, { opacity: 0, yPercent: -8, duration: 0.45, ease: "power1.in" });
   });
+  marks = items.map((_, i) => tl.labels["m" + i]);
 }
 
 /* ---------- inline videos with sound on press (the breakdown player) ---------- */
@@ -492,8 +500,10 @@ function syncBreakdown(v) {
 if (motion) {
   const sec = $(".method"), track = $(".method__track");
   const dist = () => Math.max(0, track.scrollWidth - innerWidth);
-  ST.addEventListener("refreshInit", () => (sec.style.height = innerHeight + dist() + "px"));
-  sec.style.height = innerHeight + dist() + "px";
+  // the strip moves faster than the page, so the scene stays short
+  const len = () => innerHeight + dist() * 0.5 + "px";
+  ST.addEventListener("refreshInit", () => (sec.style.height = len()));
+  sec.style.height = len();
   const slide = G.to(track, { x: () => -dist(), ease: "none", scrollTrigger: { trigger: sec, start: "top top", end: "bottom bottom", scrub: 0.6, invalidateOnRefresh: true } });
   G.to(".method__bar i", { scaleX: 1, ease: "none", scrollTrigger: { trigger: sec, start: "top top", end: "bottom bottom", scrub: 0.6 } });
   $$(".method__step").forEach((step) => {
@@ -502,8 +512,6 @@ if (motion) {
     G.from(step.querySelectorAll("h3, p, .mono"), { y: 40, opacity: 0, stagger: 0.06, ease: "power2.out",
       scrollTrigger: { trigger: step, containerAnimation: slide, start: "left 90%", end: "left 55%", scrub: true } });
   });
-  const intro = $(".method__intro");
-  G.from(intro.children, { opacity: 0, y: 50, duration: 1.1, ease: "expo.out", stagger: 0.1, scrollTrigger: whenIn(sec, "top 55%") });
 }
 
 /* ---------- 7. services: names rise row by row; a poster follows the pointer ---------- */
@@ -514,7 +522,7 @@ if (motion) {
   });
   G.from(".sv__incl li", { opacity: 0, y: 16, duration: 0.6, stagger: 0.07, ease: "power2.out", scrollTrigger: whenIn(".sv__incl", "top 90%") });
   G.from(".sv__q span", { opacity: 0, scale: 0.4, rotate: -25, duration: 0.9, stagger: 0.12, ease: "back.out(2)", scrollTrigger: whenIn(".sv__founding", "top 85%") });
-  G.from(".sv__ftxt, .sv__founding .btn", { opacity: 0, x: 40, duration: 1, stagger: 0.12, ease: "expo.out", scrollTrigger: whenIn(".sv__founding", "top 85%") });
+  G.from(".sv__ftxt, .sv__founding .btn", { opacity: 0, y: 30, duration: 1, stagger: 0.12, ease: "expo.out", scrollTrigger: whenIn(".sv__founding", "top 85%") });
 }
 (() => {
   const pv = $(".sv__preview"), img = $("img", pv);
@@ -555,14 +563,13 @@ if (motion) {
 if (motion) {
   const nums = $$(".proof__stats [data-count]");
   nums.forEach((el) => (el.textContent = "0"));
-  const tl = G.timeline({ scrollTrigger: { trigger: ".proof__pin", start: "top 35%", end: "bottom bottom", scrub: 0.5 } });
+  const tl = G.timeline({ scrollTrigger: { trigger: ".proof__pin", start: () => (innerWidth < 681 ? "top 55%" : "top 35%"), end: () => (innerWidth < 681 ? "bottom 75%" : "bottom bottom"), scrub: 0.5, invalidateOnRefresh: true } });
   nums.forEach((el, i) => {
     const o = { v: 0 }, cell = el.closest("div");
     tl.from(cell, { opacity: 0.12, y: 40, duration: 0.4, ease: "power2.out" }, i * 0.7)
       .to(o, { v: +el.dataset.count, duration: 0.9, ease: "power2.out", onUpdate: () => (el.textContent = Math.round(o.v)) }, i * 0.7);
   });
   tl.to({}, { duration: 0.5 });
-  G.from(".proof__file", { opacity: 0, y: 30, duration: 1, ease: "power3.out", scrollTrigger: whenIn(".proof__file", "top 88%") });
   G.from(".proof__dock li", { opacity: 0, y: 50, scale: 0.7, duration: 0.8, stagger: 0.06, ease: "back.out(1.7)", scrollTrigger: whenIn(".proof__dock", "top 88%") });
   $$(".proof__mini [data-count]").forEach((el) => {
     const o = { v: 0 }, n = +el.dataset.count;
@@ -594,11 +601,8 @@ if (motion) {
 
 /* ---------- 11. contact: the last words slam in, the button pulls toward the pointer ---------- */
 if (motion) {
-  const lines = $$(".book__l");
-  const tl = G.timeline({ scrollTrigger: whenIn(".book", "top 62%") });
-  lines.forEach((l, i) => tl.from($$(".wi", l), { yPercent: 120, rotate: i % 2 ? -5 : 5, duration: 1.2, ease: "expo.out", stagger: 0.05 }, i * 0.12));
-  tl.from([".book .label", ".book__side > *"], { opacity: 0, y: 30, duration: 0.9, stagger: 0.08, ease: "power3.out" }, 0.45);
-  G.fromTo(".book__title", { scale: 0.94 }, { scale: 1, ease: "none", transformOrigin: "left bottom", scrollTrigger: { trigger: ".book", start: "top bottom", end: "top top", scrub: true } });
+  G.from(".book__row > *, .book__note", { opacity: 0, y: 30, duration: 0.9, stagger: 0.08, ease: "power3.out", scrollTrigger: whenIn(".book__row", "top 92%") });
+  G.fromTo(".book__row", { "--rule": 0 }, { "--rule": 1, duration: 1.3, ease: "expo.inOut", scrollTrigger: whenIn(".book__row", "top 92%") });
   if (canHover) {
     const btn = $(".book .btn"), qx = G.quickTo(btn, "x", { duration: 0.5, ease: "power3.out" }), qy = G.quickTo(btn, "y", { duration: 0.5, ease: "power3.out" });
     btn.addEventListener("mousemove", (e) => { const r = btn.getBoundingClientRect(); qx((e.clientX - r.left - r.width / 2) * 0.25); qy((e.clientY - r.top - r.height / 2) * 0.35); });

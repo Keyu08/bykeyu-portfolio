@@ -12,8 +12,8 @@ Scroll scenes run on GSAP + ScrollTrigger, synced with Lenis smooth scrolling (a
 3. **Into the eye:** scrolling flies the camera into his left eye; the pupil holds a film.
 4. **Work:** the films ride a ring around a drum of giant WORK letters. Scrolling turns both to the left,
    with the letters slower than the films. Press a film to watch it with sound and read its breakdown.
-5. **Made with:** a marquee of logos that speeds up and turns with the scroll.
-6. **Myths:** one pinned scene; each myth gets struck through and replaced by the truth in giant type.
+5. **Made with:** a marquee of the black and white logo tiles (names in small type) that speeds up with the scroll.
+6. **Myths:** one pinned scene; each myth gets struck through and the truth rises on the centre line.
 7. **Breakdown:** pinned; scrolling steps through the five beats of The Art of Asking, the video jumps to
    each beat, and the real waveform fills as it plays (press for sound, or jump with the beat markers).
 8. **Method:** R H E A C I as a horizontal strip; each letter fills as it passes.
@@ -21,6 +21,10 @@ Scroll scenes run on GSAP + ScrollTrigger, synced with Lenis smooth scrolling (a
 10. **The letter:** every word lights up as you read, with a paragraph counter beside it.
 11. **Proof:** VisionnAIre numbers count up while pinned, recognition logos, Nymeris.
 12. **FAQ** (accordion) and the **booking** call to action.
+
+Every section opens the same way: its label's hairline rule wipes in, then the headline's words rise out of a mask
+(mark a section head with `data-enter`, its label as `<p class="label mono"><span>…</span></p>`, the headline words with `data-split`).
+After the hero a solid "Book a free call" button stays fixed in the top-right corner.
 
 People who prefer reduced motion (or if GSAP fails to load) get no opening titles, no pins or scroll animations,
 every section fully visible, and a simple grid of films.
@@ -47,7 +51,9 @@ every section fully visible, and a simple grid of films.
   `assets/videos/<id>.mp4` and `assets/posters/<id>.jpg`. The ring spaces any number of films evenly.
 - **Copy:** everything else is plain text in `index.html`. Headings marked `data-split` get the word-by-word reveal.
 - **Scene lengths:** the scroll length of each pinned scene is its section height in `css/style.css`
-  (`.motion .myths`, `.motion .bd`, `.motion .proof__pin`); the method strip sizes itself.
+  (`.hero`, `.work`, `.motion .myths`, `.motion .bd`, `.motion .proof__pin`); the method strip sizes itself
+  (`len()` in `js/main.js`). They are tuned so each step takes about one flick of the wheel (page about 20,700px at 1440x900).
+- **Rhythm:** section padding and headline sizes are tokens at the top of `css/style.css` (`--sec`, `--h-xl`, `--h-l`, `--body-l`).
 
 ## Adding videos
 

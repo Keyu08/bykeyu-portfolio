@@ -53,7 +53,7 @@
   <!-- Fixed corners, after the hero -->
   <div class="corners" aria-hidden="false">
     <a class="cn cn--tl" href="#top" aria-label="BY KEYU, back to top"><small>BY</small><b>KEYU</b></a>
-    <a class="cn cn--tr" href="#book"><span class="u">Book a call</span><small>Open for 3 brands</small></a>
+    <a class="cn cn--tr" href="#book">Book a free call <span aria-hidden="true">↗</span></a>
     <div class="cn cn--bl mono"><span id="cnSection">Work</span><small>Montréal <span data-clock>00:00</span></small></div>
     <div class="cn cn--br mono"><span id="cnProgress">00%</span><small>(scroll)</small></div>
   </div>
@@ -112,18 +112,18 @@
 
     <!-- ============ 3. Made with: one fast marquee ============ -->
     <section class="made" aria-labelledby="made-title" data-section="Made with">
-      <div class="made__head">
-        <h2 class="label mono" id="made-title">Made with</h2>
-        <p class="mono dim">Festivals, venues &amp; causes. Made mainly for Instagram Reels.</p>
+      <div class="made__head" data-enter>
+        <h2 class="label mono" id="made-title"><span>Made with</span></h2>
+        <p class="made__line">Festivals, venues &amp; causes, made mainly for Instagram Reels.</p>
       </div>
-      <div class="marq" aria-label="Brands and events I've made videos with">
-        <ul class="marq__track">
-          <li><img src="assets/icons/aloya-festival.png" alt="" width="96" height="96" loading="lazy" /><span class="anton">Aloya Festival</span></li>
-          <li><img src="assets/icons/societe-sat.png" alt="" data-alt="Société des arts technologiques (SAT)" width="96" height="96" loading="lazy" /><span class="anton">SAT</span></li>
-          <li><img src="assets/icons/whatsupmontreal.png" alt="" width="96" height="96" loading="lazy" /><span class="anton">What's Up Montréal</span></li>
-          <li><img src="assets/icons/en-marge.png" alt="" width="96" height="96" loading="lazy" /><span class="anton">En Marge</span></li>
-          <li><img src="assets/icons/obge-global.png" alt="" width="96" height="96" loading="lazy" /><span class="anton">Obge Global</span></li>
-          <li><img src="assets/icons/academie-sante-sourire.png" alt="" width="96" height="96" loading="lazy" /><span class="anton">Académie Santé Sourire</span></li>
+      <div class="marq">
+        <ul class="marq__track" aria-label="Brands and events I've made videos with">
+          <li><img src="assets/icons/aloya-festival.png" alt="" width="512" height="512" loading="lazy" /><span class="mono">Aloya Festival</span></li>
+          <li><img src="assets/icons/societe-sat.png" alt="" width="512" height="512" loading="lazy" /><span class="mono">Société des arts technologiques (SAT)</span></li>
+          <li><img src="assets/icons/whatsupmontreal.png" alt="" width="512" height="512" loading="lazy" /><span class="mono">What's Up Montréal</span></li>
+          <li><img src="assets/icons/en-marge.png" alt="" width="512" height="512" loading="lazy" /><span class="mono">En Marge</span></li>
+          <li><img src="assets/icons/obge-global.png" alt="" width="512" height="512" loading="lazy" /><span class="mono">Obge Global</span></li>
+          <li><img src="assets/icons/academie-sante-sourire.png" alt="" width="512" height="512" loading="lazy" /><span class="mono">Académie Santé Sourire</span></li>
         </ul>
       </div>
     </section>
@@ -131,38 +131,39 @@
     <!-- ============ 4. Misconceptions: one pinned scene ============ -->
     <section class="myths" aria-labelledby="myths-title" data-section="Ads">
       <div class="myths__stage">
-        <h2 class="myths__title" id="myths-title"><span class="anton" data-split>Your audience can smell an ad.</span><span class="serif"><i>So I make the ones they'd watch anyway.</i></span></h2>
+        <div class="myths__title" data-enter>
+          <p class="label mono"><span>Three myths about branded content</span></p>
+          <h2 id="myths-title"><span class="anton" data-split>Your audience can smell an ad.</span><span class="serif"><i>So I make the ones they'd watch anyway.</i></span></h2>
+        </div>
         <ol class="myths__list">
           <li>
-            <span class="anton myths__big" aria-hidden="true">01</span>
-            <span class="mono myths__n">Myth 01 / 03</span>
-            <p class="myths__myth serif"><s>People skip branded content.<i class="strike" aria-hidden="true"></i></s></p>
+            <div class="myths__head"><span class="mono myths__n">Myth 01 / 03</span>
+              <p class="myths__myth serif"><s>People skip branded content.<i class="strike" aria-hidden="true"></i></s></p></div>
             <b class="anton myths__truth" data-split>They skip ads, not&nbsp;brands.</b>
             <p class="myths__line">People watch stories, lessons and feelings, even with a brand in them.</p>
           </li>
           <li>
-            <span class="anton myths__big" aria-hidden="true">02</span>
-            <span class="mono myths__n">Myth 02 / 03</span>
-            <p class="myths__myth serif"><s>Premium video needs a film crew.<i class="strike" aria-hidden="true"></i></s></p>
+            <div class="myths__head"><span class="mono myths__n">Myth 02 / 03</span>
+              <p class="myths__myth serif"><s>Premium video needs a film crew.<i class="strike" aria-hidden="true"></i></s></p></div>
             <b class="anton myths__truth" data-split>It needs the right&nbsp;person.</b>
             <p class="myths__line">Premium is decided before the camera rolls: hook, framing, light, pacing, sound.</p>
           </li>
           <li>
-            <span class="anton myths__big" aria-hidden="true">03</span>
-            <span class="mono myths__n">Myth 03 / 03</span>
-            <p class="myths__myth serif"><s>If it looks good, it will sell.<i class="strike" aria-hidden="true"></i></s></p>
+            <div class="myths__head"><span class="mono myths__n">Myth 03 / 03</span>
+              <p class="myths__myth serif"><s>If it looks good, it will sell.<i class="strike" aria-hidden="true"></i></s></p></div>
             <b class="anton myths__truth" data-split>Strategy is what&nbsp;sells.</b>
             <p class="myths__line">Every video is planned around what your audience needs to see before they buy.</p>
           </li>
         </ol>
+        <div class="myths__dots" aria-hidden="true"><i></i><i></i><i></i></div>
       </div>
     </section>
 
     <!-- ============ 5. Breakdown: beats step through, synced to the real video ============ -->
     <section class="bd" id="breakdown" aria-labelledby="bd-title" data-section="Breakdown">
       <div class="bd__stage">
-        <div class="bd__head">
-          <p class="label mono">How I learn</p>
+        <div class="bd__head" data-enter>
+          <p class="label mono"><span>How I learn</span></p>
           <h2 class="anton bd__title" id="bd-title" data-split>I break down every video I make.</h2>
         </div>
         <figure class="bd__player" data-video="storytelling1" data-cursor="sound">
@@ -189,9 +190,9 @@
     <section class="method" aria-labelledby="method-title" data-section="Method">
       <div class="method__stage">
         <ol class="method__track">
-          <li class="method__intro">
-            <p class="label mono">How we work together</p>
-            <h2 id="method-title"><span class="anton">Creative instinct.</span> <span class="serif"><i>Scientific process.</i></span></h2>
+          <li class="method__intro" data-enter>
+            <p class="label mono"><span>How we work together</span></p>
+            <h2 id="method-title"><span class="anton" data-split>Creative instinct.</span> <span class="serif" data-split><i>Scientific process.</i></span></h2>
             <p class="dim">Learned in research labs. Used on your content.</p>
           </li>
           <li class="method__step"><b class="anton" aria-hidden="true">R</b><span class="mono">01</span><h3 class="serif">Research</h3><p>Your brand, audience and competitors.</p></li>
@@ -207,8 +208,8 @@
 
     <!-- ============ 7. Services: a bold index ============ -->
     <section class="sv" id="services" aria-labelledby="sv-title" data-section="Services">
-      <div class="sv__head">
-        <p class="label mono">Work with me</p>
+      <div class="sv__head" data-enter>
+        <p class="label mono"><span>Work with me</span></p>
         <h2 class="anton sv__title" id="sv-title" data-split>Ways to work with me.</h2>
       </div>
       <ul class="sv__list">
@@ -237,8 +238,8 @@
 
     <!-- ============ 8. The letter: every word lights up as you read ============ -->
     <section class="letter" id="letter" aria-labelledby="letter-title" data-section="The letter">
-      <aside class="letter__side">
-        <p class="label mono" id="letter-title">A letter, not a pitch</p>
+      <aside class="letter__side" data-enter>
+        <p class="label mono" id="letter-title"><span>A letter, not a pitch</span></p>
         <p class="letter__count anton" aria-hidden="true"><span id="letterNow">01</span><small>/ <span id="letterAll">25</span></small></p>
         <div class="letter__meter" aria-hidden="true"><i></i></div>
       </aside>
@@ -282,8 +283,8 @@
 
     <!-- ============ 9. Proof: counters ============ -->
     <section class="proof" aria-labelledby="proof-title" data-section="Proof">
-      <div class="proof__pin"><div class="proof__stage">
-        <p class="label mono">Why trust me</p>
+      <div class="proof__pin"><div class="proof__stage" data-enter>
+        <p class="label mono"><span>Why trust me</span></p>
         <h2 class="anton proof__title" id="proof-title" data-split>Trained in a lab. Sharpened on the feed.</h2>
         <p class="proof__file"><span class="mono sky">Project file / VisionnAIre</span><span class="serif">I built a low-cost AI that detects eye disease. I make videos the same way.</span></p>
         <dl class="proof__stats">
@@ -293,7 +294,7 @@
         </dl>
       </div></div>
       <div class="proof__recog">
-        <p class="label mono">Recognized by national &amp; provincial awards, TV and radio</p>
+        <p class="label label--plain mono">Recognized by national &amp; provincial awards, TV and radio</p>
         <ul class="proof__dock">
           <li><img src="assets/icons/cwsf.png" alt="Canada-Wide Science Fair" width="72" height="72" loading="lazy" /></li>
           <li><img src="assets/icons/youth-can-innovate.png" alt="Youth Can Innovate" width="72" height="72" loading="lazy" /></li>
@@ -315,8 +316,8 @@
 
     <!-- ============ 10. FAQ ============ -->
     <section class="faq" id="faq" aria-labelledby="faq-title" data-section="Questions">
-      <div class="faq__head">
-        <p class="label mono">Before we collab</p>
+      <div class="faq__head" data-enter>
+        <p class="label mono"><span>Before we collab</span></p>
         <h2 class="anton faq__title" id="faq-title" data-split>Objections, handled.</h2>
       </div>
       <div class="faq__list">
@@ -334,14 +335,16 @@
 
     <!-- ============ 11. Contact ============ -->
     <section class="book" id="book" aria-labelledby="book-title" data-section="Contact">
-      <p class="label mono">3 partnership spots for <span data-month>next month</span></p>
-      <h2 class="anton book__title" id="book-title"><span class="book__l" data-split>Let's build</span><span class="book__l" data-split>something</span><span class="book__l book__l--sky" data-split>iconic.</span></h2>
-      <div class="book__side">
-        <p class="book__lead">20 minutes, free. I'll bring 3 ideas for your brand, whether we work together or not.</p>
-        <a class="btn btn--xl anton" href="#book" data-book-main>Book a free call <span aria-hidden="true">↗</span></a>
-        <p class="book__mail serif"><i>or pitch your project:</i><br /><a href="mailto:keyuhu.ca@gmail.com">keyuhu.ca@gmail.com</a></p>
-        <p class="book__note mono dim">Max 4 brands at a time, so every collab gets real attention.</p>
+      <div class="book__head" data-enter>
+        <p class="label mono"><span>3 partnership spots for <span data-month>next month</span></span></p>
+        <h2 class="anton book__title" id="book-title"><span class="book__l" data-split>Let's build</span> <span class="book__l" data-split>something iconic.</span></h2>
       </div>
+      <div class="book__row">
+        <a class="btn btn--xl anton" href="#book" data-book-main>Book a free call <span aria-hidden="true">↗</span></a>
+        <p class="book__lead">20 minutes, free. I'll bring 3 ideas for your brand, whether we work together or not.</p>
+        <p class="book__mail serif"><i>or pitch your project:</i><br /><a href="mailto:keyuhu.ca@gmail.com">keyuhu.ca@gmail.com</a></p>
+      </div>
+      <p class="book__note mono dim">Max 4 brands at a time, so every collab gets real attention.</p>
     </section>
   </main>
 
