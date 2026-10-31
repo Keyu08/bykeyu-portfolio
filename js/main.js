@@ -10,27 +10,27 @@ const FILMS = [
     notes: [["The idea", "I wanted someone watching from their couch to feel like they'd missed out. So I didn't film the stage. I filmed what people were doing: games, races, a basketball dunk, Pilates on a rooftop."],
       ["Hook", "A golden-hour shot of the crowd with \"POV: summer in Montréal\", then me welcoming you in. Within three seconds you know where you are and why to keep watching."],
       ["Structure", "Each sponsor activation plays like a small challenge with a prize, like free drinks or points, so the video moves like a game and ends on the sunset DJ set."],
-      ["Sound & look", "Quick cuts on a pop track, a warm grade, and score-style captions such as \"200 points\" to keep it playful."],
+      ["Sound and look", "Quick cuts on a pop track, a warm grade, and score-style captions such as \"200 points\" to keep it playful."],
       ["For your brand", "Sponsors appear as something people play with, not a logo in the background. That's the part of an event people remember and come back for."]] },
-  { id: "storytelling1", t: "The Art of Asking", k: "Storytelling", ar: "9:16", meta: "Wonderland / Storytelling / 75K views", views: "75K views", line: "Free Fast Passes, one cold approach at a time. It's broken down beat by beat further down." },
-  { id: "vibeyvlog3", t: "Frozen Heart", k: "Shanghai at night", ar: "16:9", meta: "Shanghai / Cinematic / 222K views", views: "222K views", line: "Shanghai at night." },
+  { id: "storytelling1", t: "The Art of Asking", k: "Storytelling", ar: "9:16", meta: "Wonderland / Storytelling / 75K views", views: "75K views", line: "Free Fast Passes, one cold approach at a time. Broken down beat by beat further down the page." },
+  { id: "vibeyvlog3", t: "Frozen Heart", k: "Cinematic", ar: "16:9", meta: "Shanghai / Cinematic / 222K views", views: "222K views", line: "Shanghai at night, cut to the music." },
   { id: "ugc1", t: "Chaoxiyuan", k: "Immersive dining", ar: "16:9", meta: "Shanghai / Immersive dining / 54 s", line: "A dinner show, filmed from the guest's seat.",
     notes: [["The idea", "Everyone online was talking about this place. I wanted viewers to feel like they had a seat at the table, from getting into costume to the last course."],
       ["Hook", "A fan snaps open, then acrobats fly over the tables. I show the most surprising moment first and explain later."],
       ["Structure", "Everything in the order a guest lives it: costume and makeup, the lantern corridors, nine courses with aerial dancers, then where to find the restaurant."],
-      ["Sound & look", "Cuts follow the drums, a whip transition on each costume change, and very little text, so nothing covers the costumes and the lighting."],
+      ["Sound and look", "Cuts follow the drums, a whip transition on each costume change, and very little text, so nothing covers the costumes and the lighting."],
       ["For your brand", "When people can picture themselves at your table, booking one is the next step."]] },
   { id: "launchvideo", t: "En Marge", k: "Launch series", ar: "9:16", meta: "Student fundraiser / Episode 1 / 33 s", line: "Day one of a student-run show raising $10K for kids with cancer.",
     notes: [["The idea", "A few students setting out to fill a 1,000-seat theatre for kids with cancer. I wanted people to feel the size of that goal and want to be part of it."],
       ["Hook", "Me alone on an empty stage, asking whether a few students can fill a 1,000-seat theatre. The empty seats make the point."],
       ["Structure", "The challenge, then why it matters, then the $10K goal, and an ending that leaves the question open so people come back for episode two."],
-      ["Sound & look", "Quiet in the empty theatre, louder over the concert footage, simple title cards, and subtitles in French and English."],
+      ["Sound and look", "Quiet in the empty theatre, louder over the concert footage, simple title cards, and subtitles in French and English."],
       ["For your brand", "A launch works better as a series people can follow over time. Show where you're starting and invite them along."]] },
   { id: "storytelling2", t: "10 days until CEGEP", k: "Series, ep 1", ar: "9:16", meta: "My storytelling series / Episode 1" },
   { id: "edits2", t: "10 PM in Shanghai", k: "Food", ar: "16:9", meta: "Shanghai / Food" },
   { id: "storytelling3", t: "A TED talk in 1h20", k: "Series, ep 2", ar: "9:16", meta: "My storytelling series / Episode 2" },
   { id: "edits3", t: "Bored in Montréal", k: "Rooftop party", ar: "16:9", meta: "Montréal / Nightlife" },
-  { id: "storytelling4", t: "Dreams & balloons", k: "Series, ep 3", ar: "9:16", meta: "My storytelling series / Episode 3" },
+  { id: "storytelling4", t: "Dreams and balloons", k: "Series, ep 3", ar: "9:16", meta: "My storytelling series / Episode 3" },
   { id: "vibeyvlog2", t: "Rainy temple hike", k: "Hangzhou", ar: "16:9", meta: "Hangzhou / Travel" },
   { id: "storytelling5", t: "Turning 18 in Beijing", k: "Documentary", ar: "4:3", meta: "Beijing / Documentary" },
 ];
@@ -109,28 +109,48 @@ const WORDS = ["Visual storyteller", "Content strategist", "Editor"];
 const giantWord = $(".giant__word");
 const spell = (word, cls) => [...word].map((c) => (c === " " ? '<span class="sp"></span>' : `<span class="ch"><span class="${cls}">${c}</span></span>`)).join("");
 const fitGiant = () => {
+  // measure the longest word on a hidden copy, so a swap in progress is never touched
   const avail = stage.clientWidth - 2 * Math.min(28, stage.clientWidth * 0.03);
-  const keep = giantWord.innerHTML;
-  giantWord.style.fontSize = "200px";
   const longest = WORDS.reduce((a, b) => (a.length > b.length ? a : b));
-  giantWord.innerHTML = spell(longest, "");
-  const fs = (200 * avail) / giantWord.scrollWidth;
-  giantWord.innerHTML = keep;
+  const probe = document.createElement("span");
+  probe.className = "giant__word";
+  probe.style.cssText = "position:absolute;left:0;top:0;visibility:hidden;font-size:200px";
+  probe.innerHTML = spell(longest, "");
+  giantWord.parentNode.appendChild(probe);
+  const fs = (200 * avail) / Math.max(1, probe.scrollWidth);
+  probe.remove();
   giantWord.style.fontSize = fs + "px";
   stage.style.setProperty("--giant-h", Math.ceil(fs * 0.86 * 1.06 + 18) + "px");
 };
 giantWord.innerHTML = spell(WORDS[0], "");
 if (motion) {
-  // GSAP drives the swap on the main clock, so the word is never left hidden by a stalled CSS animation
-  let wi = 0;
-  setInterval(() => {
-    if (document.hidden || window.scrollY > innerHeight) return;
-    G.to($$(".ch > span", giantWord), { yPercent: -105, duration: 0.6, ease: "power3.in", stagger: 0.022, overwrite: true, onComplete: () => {
+  // one swap at a time, chained on GSAP's clock; each new word always ends fully in place
+  let wi = 0, swapAt = 0;
+  const chars = () => $$(".ch > span", giantWord);
+  const swap = () => {
+    if (document.hidden || window.scrollY > innerHeight || root.classList.contains("is-loading")) { G.delayedCall(1.2, swap); return; }
+    swapAt = performance.now();
+    G.to(chars(), { yPercent: -105, duration: 0.6, ease: "power3.in", stagger: 0.022, overwrite: true, onComplete: () => {
       wi = (wi + 1) % WORDS.length;
       giantWord.innerHTML = spell(WORDS[wi], "");
-      G.fromTo($$(".ch > span", giantWord), { yPercent: 105 }, { yPercent: 0, duration: 0.7, ease: "power3.out", stagger: 0.022 });
+      G.fromTo(chars(), { yPercent: 105 }, { yPercent: 0, duration: 0.7, ease: "power3.out", stagger: 0.022, onComplete: () => {
+        G.set(chars(), { yPercent: 0 });
+        G.delayedCall(3.6, swap);
+      } });
     } });
-  }, 4600);
+  };
+  G.delayedCall(4.2, swap);
+  // watchdog on a separate clock: if the word is ever empty or left out of place, put it back
+  setInterval(() => {
+    const cs = chars();
+    if (!cs.length) { giantWord.innerHTML = spell(WORDS[wi], ""); return; }
+    const off = cs.some((c) => Math.abs(+G.getProperty(c, "yPercent")) > 0.5);
+    if (!off) return;
+    if (!G.isTweening(cs)) G.set(cs, { yPercent: 0 });
+    else if (performance.now() - swapAt > 4000) {   // a swap takes about 1.6 s; this one stalled, so finish it and keep the cycle going
+      G.killTweensOf(cs); G.set(cs, { yPercent: 0 }); G.delayedCall(3.6, swap);
+    }
+  }, 1500);
 }
 
 /* ---------- hero: line field + 3D head + dive into the eye ---------- */
@@ -255,6 +275,7 @@ const buildWork = () => {
     ring.appendChild(el);
     cards.push({ el, angle: i * (360 / FILMS.length), y: YOFF[i % YOFF.length], f, video: null });
   });
+  if (!canHover) $(".work__hint").textContent = "Tap a film to watch it with sound";
   // the same films as a plain list, for reduced motion
   $(".work__list").innerHTML = FILMS.map((f, i) => `<li><button type="button" data-film="${i}"><img src="assets/posters/${f.id}.jpg" alt="" loading="lazy" /><span class="mono">${pad(i + 1)} ${f.t}</span><br /><span class="mono dim">${f.k}</span>${f.views ? ` <span class="mono sky">${f.views}</span>` : ""}</button></li>`).join("");
   $$(".work__list [data-film]").forEach((b) => b.addEventListener("click", () => openFilm(+b.dataset.film)));
@@ -668,6 +689,7 @@ document.addEventListener("click", (e) => {
   if (!btn) return;
   const isMain = btn.hasAttribute("data-book-main");
   e.preventDefault();
+  if (btn.hasAttribute("data-nav")) { scrollToEl($("#book")); return; }   // the menu's "Contact" goes to the end card
   if (window.Calendly) { closeFilm(); window.Calendly.initPopupWidget({ url: CALENDLY_URL }); }
   else if (isMain) window.location.href = "mailto:keyuhu.ca@gmail.com?subject=Let's%20work%20together";
   else scrollToEl($("#book"));

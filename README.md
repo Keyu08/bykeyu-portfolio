@@ -8,7 +8,8 @@ Scroll scenes run on GSAP + ScrollTrigger, synced with Lenis smooth scrolling (a
 
 1. **Opening titles:** "Lights down, friend. Come in." appears word by word (once per visit, click to skip).
 2. **Hero:** a grid header, a field of lines that bends around a 3D chibi Keyu who turns to look at the
-   pointer, and a giant word cycling *Visual storyteller / Content strategist / Editor*. Above the roles ticker,
+   pointer, and a giant word cycling *Visual storyteller / Content strategist / Editor* (one swap at a time on GSAP's clock, sized on a hidden
+copy, with a watchdog that puts the word back if a swap ever stalls, so it is never left blank). Above the roles ticker,
    the hero line says who, what and how to act at a glance ("Keyu Hu / Montréal · Short videos for brands. Made for
    Instagram."); below 1280px, where the header's value line is hidden, it adds "Videos people watch to the end"
    and its own "Book a free call" button, and the head centres in the space above it.
@@ -17,7 +18,7 @@ Scroll scenes run on GSAP + ScrollTrigger, synced with Lenis smooth scrolling (a
    with the letters slower than the films. Press a film to watch it with sound and read its breakdown.
    The two films with real view counts come right after the first one, and the "now playing" line shows
    their views as a sky badge (`views` in `FILMS`).
-5. **Clients & partners:** a marquee of the black and white logo tiles (names in small type) that speeds up with the scroll.
+5. **Clients and partners:** a marquee of the black and white logo tiles (names in small type) that speeds up with the scroll.
 6. **Services:** five offers as a bold index; every row shows a "Book a call" tag (on phones too) and opens the booking popup.
    Then what's included and Founding Brand Partners.
 7. **Myths:** one pinned scene; each myth gets struck through, and the new truth rises in on the centre line
@@ -34,7 +35,10 @@ Scroll scenes run on GSAP + ScrollTrigger, synced with Lenis smooth scrolling (a
 
 Every section opens the same way: its label's hairline rule wipes in, then the headline's words rise out of a mask
 (mark a section head with `data-enter`, its label as `<p class="label mono"><span>…</span></p>`, the headline words with `data-split`).
-After the hero a solid "Book a free call" button stays fixed in the top-right corner.
+After the hero a solid "Book a free call" button stays fixed in the top-right corner, over a dark fade along the top edge
+(`.corners::before`) so headlines and text never run under it. "Book a free call ↗" is the one label for every big booking
+button (service rows say "Book a call"); the menu's "Contact" (`data-nav`) scrolls to the end card instead of opening the popup.
+In the film player the button sits in a bar that stays in view while the notes scroll.
 
 People who prefer reduced motion (or if GSAP fails to load) get no opening titles, no pins or scroll animations,
 every section fully visible, and a simple grid of films.

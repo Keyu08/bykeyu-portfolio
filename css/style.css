@@ -31,6 +31,8 @@ a { color: inherit; text-decoration: none; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 ::selection { background: var(--bone); color: var(--bg); }
 :focus-visible { outline: 2px solid var(--sky); outline-offset: 3px; }
+h1, h2, h3, .myths__truth, .myths__myth, .bd__beats b, .proof__nyline, .sv__ftxt p, .hl__what, .proof__file .serif, .myths__line { text-wrap: balance; }
+p, dd, li, summary { text-wrap: pretty; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 .mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; line-height: 1.7; }
@@ -92,6 +94,11 @@ html.is-loading body { overflow: hidden; }
 .cn--bl { left: var(--gut); bottom: 20px; }
 .cn--br { right: var(--gut); bottom: 20px; text-align: right; align-items: flex-end; }
 .film-open .cn { opacity: 0 !important; }
+/* a quiet zone behind the corner marks, so headlines and text never run under the booking button */
+.corners::before { content: ""; position: fixed; z-index: 59; left: 0; right: 0; top: 0; height: 92px; pointer-events: none;
+  background: linear-gradient(to bottom, var(--bg) 30%, rgba(5, 5, 5, 0.85) 55%, rgba(5, 5, 5, 0)); opacity: 0; transition: opacity 0.5s; }
+.past-hero .corners::before { opacity: 1; }
+.in-book .corners::before, .film-open .corners::before { opacity: 0; }
 
 /* ---------- 1. hero ---------- */
 .hero { position: relative; height: 215vh; }
@@ -166,7 +173,7 @@ html.is-loading body { overflow: hidden; }
 .work__now span:first-child { color: var(--sky); }
 .work__views { font-style: normal; align-self: center; background: var(--sky); color: var(--bg); padding: 5px 9px 4px; letter-spacing: 0.12em; }
 .work__views[hidden] { display: none; }
-.work__hint { position: absolute; z-index: 5; left: 50%; top: 9vh; transform: translateX(-50%); color: var(--dim); white-space: nowrap; }
+.work__hint { position: absolute; z-index: 5; left: 50%; top: max(9vh, 104px); transform: translateX(-50%); color: var(--dim); white-space: nowrap; }
 .work__list { display: none; list-style: none; }
 
 /* fallback list (reduced motion, or no 3D) */
@@ -231,6 +238,7 @@ html:not(.motion) .marq__track { flex-wrap: wrap; width: auto; justify-content: 
 .bd__stage { padding: var(--sec) var(--gut); display: grid; grid-template-columns: minmax(220px, 300px) 1fr; gap: 5vh 5vw; }
 .bd__head { grid-column: 1 / -1; }
 .bd__title { font-size: var(--h-l); max-width: 9ch; }
+.bd__lead { margin-top: 2.6vh; max-width: 24em; color: var(--dim); font-size: var(--body-l); }
 .bd__player { position: relative; width: 100%; aspect-ratio: 9 / 16; background: #111 url("../assets/posters/storytelling1.jpg") center / cover; cursor: pointer; align-self: start; }
 .bd__player video { width: 100%; height: 100%; object-fit: cover; }
 .bd__player figcaption { position: absolute; left: 0; right: 0; top: calc(100% + 10px); display: flex; justify-content: space-between; gap: 10px; }
@@ -345,6 +353,7 @@ html:not(.motion) .letter__count, html:not(.motion) .letter__meter { display: no
 .proof { padding: 0 var(--gut) var(--sec); }
 .proof__stage { padding: var(--sec) 0 8vh; }
 .proof__title { font-size: var(--h-l); max-width: 22ch; }
+.proof__l { display: block; }
 .proof__file { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: baseline; margin: 4vh 0 6vh; }
 .proof__file .serif { font-size: clamp(22px, 2.2vw, 36px); line-height: 1.12; max-width: 30ch; }
 .proof__stats { display: grid; grid-template-columns: 1.25fr 1fr 1fr; border-top: 1px solid var(--line); }
@@ -377,7 +386,7 @@ html:not(.motion) .letter__count, html:not(.motion) .letter__meter { display: no
 .faq__list summary::after { content: "+"; justify-self: end; font: 400 22px/1 "JetBrains Mono", monospace; color: var(--sky); transition: transform 0.35s; }
 .faq__list details[open] summary::after { transform: rotate(45deg); }
 .faq__a { overflow: hidden; }
-.faq__a p { color: var(--dim); padding: 0 40px 24px 48px; max-width: 700px; font-size: 16px; }
+.faq__a p { color: var(--dim); padding: 0 40px 24px 48px; max-width: calc(62ch + 88px); font-size: 16px; }
 
 .faq__ask { margin-top: 3.4vh; color: var(--dim); font-size: var(--body-l); max-width: 22em; }
 .faq__ask a { color: var(--bone); transition: color 0.3s; }
@@ -421,14 +430,17 @@ html:not(.motion) .letter__count, html:not(.motion) .letter__meter { display: no
 .film__close { position: absolute; z-index: 2; right: var(--gut); top: 22px; padding: 8px 0; border-bottom: 1px solid currentColor; }
 .film__media { display: grid; place-items: center; padding: 6vh 3vw; min-height: 0; }
 .film__media video { max-width: 100%; max-height: 88vh; background: #000; }
-.film__info { padding: 12vh var(--gut) 6vh 0; overflow-y: auto; }
+.film__info { padding: 9vh var(--gut) 4vh 0; overflow-y: auto; }
 .film__info h2 { font-size: clamp(44px, 5vw, 90px); margin: 10px 0 18px; }
 .film__info .mono { color: var(--dim); }
 .film__line { font-size: clamp(22px, 2vw, 30px); line-height: 1.15; margin-bottom: 26px; }
 .film__notes div { padding: 14px 0; border-top: 1px solid var(--line); }
 .film__notes dt { font: 500 11px/1.6 "JetBrains Mono", monospace; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sky); margin-bottom: 4px; }
-.film__notes dd { color: var(--dim); font-size: 16px; }
-.film__cta { display: inline-block; margin-top: 30px; font-size: 22px; letter-spacing: 0.04em; border-bottom: 2px solid var(--bone); padding-bottom: 4px; }
+.film__notes dd { color: var(--dim); font-size: 16px; max-width: 62ch; }
+/* the way to book stays in view while the notes scroll */
+.film__act { position: sticky; bottom: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 24px; margin-top: 26px; padding: 18px 0 3vh; background: #040404; border-top: 1px solid var(--line); }
+.film__ask { font-size: clamp(21px, 1.7vw, 26px); line-height: 1.2; color: var(--dim); }
+.film__cta { height: 60px; padding: 0 26px; font-size: 22px; }
 
 /* sound badge on inline videos */
 .snd { position: absolute; left: 12px; bottom: 12px; z-index: 2; font: 500 10px/1 "JetBrains Mono", monospace; letter-spacing: 0.14em; text-transform: uppercase; background: rgba(5, 5, 5, 0.6); padding: 7px 9px; }
@@ -466,9 +478,10 @@ html:not(.motion) .letter__count, html:not(.motion) .letter__meter { display: no
   .sv__founding { grid-template-columns: minmax(0, 1fr); justify-items: start; }
   .sv__ftxt { max-width: 100%; }
   .proof__ny { grid-template-columns: 1fr; }
+  .foot { grid-template-columns: 1fr 1fr; gap: 14px 28px; }
   .motion .bd__stage { padding: 12vh var(--gut) 3vh; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; gap: 2.4vh 5vw; }
   .motion .bd__head { grid-column: 1 / -1; }
-  .motion .bd__head .label { display: none; }
+  .motion .bd__head .label, .motion .bd__lead { display: none; }
   .motion .bd__title { font-size: clamp(34px, 6vw, 60px); max-width: none; }
   .motion .bd__player { grid-column: 1; grid-row: 2; height: 100%; max-height: 52vh; align-self: center; }
   .motion .bd__player figcaption { display: none; }
@@ -498,6 +511,7 @@ html:not(.motion) .letter__count, html:not(.motion) .letter__meter { display: no
   #nowKind { display: none; }
   .cn--bl, .cn--br { display: none; }
   .cn--tr { top: 12px; padding: 12px 14px 11px; font-size: 15px; }
+  .corners::before { height: 72px; }
   .made__head { flex-direction: column; gap: 10px; align-items: stretch; }
   .marq__track li { width: 128px; margin-right: 20px; gap: 12px; }
   .myths__myth { font-size: clamp(26px, 7.6vw, 40px); }
