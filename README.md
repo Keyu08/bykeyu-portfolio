@@ -13,18 +13,23 @@ copy, with a watchdog that puts the word back if a swap ever stalls, so it is ne
    the hero line says who, what and how to act at a glance ("Keyu Hu / Montréal · Short videos for brands. Made for
    Instagram."); below 1280px, where the header's value line is hidden, it adds "Videos people watch to the end"
    and its own "Book a free call" button, and the head centres in the space above it.
-3. **Into the eye:** scrolling flies the camera into his left eye; the pupil holds a film.
+3. **Into the eye:** scrolling flies the camera into his left eye; the pupil holds a film. It is one camera move:
+   the ring's stage already waits (fixed, hidden) under the hero's last screen, and rises out of the dark as the
+   camera passes through the pupil (`--in`, set from the hero's zoom), so there is no blank screen or page slide between them.
 4. **Work:** the films ride a ring around a drum of giant WORK letters. Scrolling turns both to the left,
    with the letters slower than the films. The film in front carries a "Watch" tag; press it to watch with sound and read its breakdown.
+   The ring eases a little after the scroll (it has weight), and the "now playing" line rolls to each new film.
    On phones and portrait tablets the ring zooms in and the films are drawn 1.4x bigger, so each is easy to tap.
+   On phones the letters sit on a smaller drum further back and dimmer, and the side films fade, so the film in front leads.
    The stills load only as the ring comes near, and no video loads before it is needed.
    The two films with real view counts come right after the first one, and the "now playing" line shows
    their views as a sky badge (`views` in `FILMS`).
 5. **Clients and partners:** a marquee of the black and white logo tiles (names in small type) that speeds up with the scroll.
 6. **Services:** five offers as a bold index; every row shows a "Book a call" tag (on phones too) and opens the booking popup.
    Then what's included and Founding Brand Partners.
-7. **Myths:** one pinned scene; each myth gets struck through, and the new truth rises in on the centre line
-   as the last one rises out, so the centre line is never empty.
+7. **Myths:** one pinned scene; the scroll picks the step and each step plays on the clock (never half-made when
+   the scroll stops): the last truth rises out as the new myth and its truth arrive, and the strike (drawn on every
+   line of the myth) lands quickly.
 8. **Breakdown:** pinned; scrolling steps through the five beats of The Art of Asking (on phones: the video on top,
    the beat number beside it, the beat below), the video jumps to each beat, and the real waveform fills as it plays (press for sound, or jump with the beat markers).
 9. **Method:** R H E A C I as a horizontal strip; each letter fills as it passes. On phones (≤680px) it is a 2-column grid instead,
@@ -36,6 +41,10 @@ copy, with a watchdog that puts the word back if a swap ever stalls, so it is ne
 13. **Booking:** the end card. The lights come up: a bone section opens out to the full screen with the biggest
     button on the page (the corner button steps aside there). It is one screen minus the footer (`--foot-h`), so at the end
     of the page the whole card and the footer are in view together.
+
+Motion uses two curves everywhere: `expo.out` (CSS `--ease-out`) for entrances, about 1 s, and `expo.inOut`
+(`--ease-io`) for wipes and swaps. The hero only redraws the head and the line field while it is on screen, at full rate
+only while the scroll or pointer changes, and not at all once the dive has gone dark.
 
 Every section opens the same way: its label's hairline rule wipes in, then the headline's words rise out of a mask
 (mark a section head with `data-enter`, its label as `<p class="label mono"><span>…</span></p>`, the headline words with `data-split`).
@@ -71,7 +80,7 @@ every section fully visible, and a simple grid of films.
 - **Scene lengths:** the scroll length of each pinned scene is its section height in `css/style.css`
   (`.hero`, `.work`, `.motion .myths`, `.motion .bd`); portrait tablets get shorter ones (the `orientation: portrait` block near the end).
   The method strip sizes itself (`len()` in `js/main.js`). They are tuned so each step takes about one flick of the wheel
-  (page about 20,200px at 1440x900 and at 768x1024, 20,200px at 390x844).
+  (page about 19,200px at 1440x900 and at 390x844; the ring overlaps the hero's last screen).
 - **Rhythm:** section padding and headline sizes are tokens at the top of `css/style.css` (`--sec`, `--h-xl`, `--h-l`, `--body-l`).
 
 ## Adding videos

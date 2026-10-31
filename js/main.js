@@ -227,19 +227,40 @@ const sectionProgress = (el) => {
   return clamp(-r.top / Math.max(1, r.height - innerHeight));
 };
 
+// the hero draws only while it can be seen, and at full rate only while something is changing
+// (scroll, pointer); at rest the idle sway runs at half rate, and once the screen is black it stops
+let lastZoom = -1, lastDraw = 0, lastPx = -1, lastPy = -1, ringIn = -1, postersOn = false;
+const workStage = $(".work__stage");
 const heroLoop = (time) => {
   const r = hero.getBoundingClientRect();
   const visible = r.bottom > 0 && !introRunning();
   if (visible) {
     const zoom = reduce ? 0 : ss(0.06, 1, sectionProgress(hero));
-    stage.style.setProperty("--z", zoom.toFixed(4));
-    drawField(time, zoom);
-    if (head) {
-      const idle = !pointer.moved;
-      head.frame({
-        px: idle ? 0.5 + Math.sin(time * 0.0005) * 0.15 : pointer.x, py: idle ? 0.42 : pointer.y,
-        cx: layout.cx, cy: layout.cy, size: layout.size, zoom, time,
-      });
+    const live = zoom !== lastZoom || pointer.x !== lastPx || pointer.y !== lastPy;
+    if (live || time - lastDraw > 30) {
+      if (zoom !== lastZoom) stage.style.setProperty("--z", zoom.toFixed(4));
+      if (zoom < 0.985) {
+        drawField(time, zoom);
+        if (head) {
+          const idle = !pointer.moved;
+          head.frame({
+            px: idle ? 0.5 + Math.sin(time * 0.0005) * 0.15 : pointer.x, py: idle ? 0.42 : pointer.y,
+            cx: layout.cx, cy: layout.cy, size: layout.size, zoom, time,
+          });
+        }
+      }
+      lastDraw = time; lastZoom = zoom; lastPx = pointer.x; lastPy = pointer.y;
+    }
+  }
+  if (motion) {
+    // the ring rises out of the dark while the camera passes through the pupil
+    if (!postersOn && (lastZoom > 0.4 || r.bottom <= 0)) { postersOn = true; loadPosters(); }
+    const inn = r.bottom <= 0 ? 1 : ss(0.9, 1, lastZoom < 0 ? 0 : lastZoom);
+    if (inn !== ringIn) {
+      ringIn = inn;
+      workStage.style.setProperty("--in", inn.toFixed(4));
+      workStage.classList.toggle("is-out", inn <= 0);
+      workStage.classList.toggle("is-dim", inn < 0.6);
     }
   }
   if (!motion) {
@@ -255,14 +276,19 @@ const SIZES = { "9:16": [250, 444], "16:9": [520, 293], "4:3": [450, 338] };
 const YOFF = [-40, 60, -70, 40, -20, 80, -60, 30, -80, 50, -30, 70];
 const work = $(".work"), ring = $(".drum--ring"), letters = $(".drum--letters"), scaleEl = $(".work__scale");
 const cards = [];
+let phoneRing = false;
+let loadPosters = () => {};
 const buildWork = () => {
   const mobile = innerWidth < 760;
-  const step = mobile ? 15 : 12;
+  phoneRing = mobile;
+  // phones: the letters sit on a smaller drum further back and dimmer, so the films in front read clearly
+  const step = mobile ? 20 : 12, LR = mobile ? 760 : 1150;
   let html = "";
   ["W", "O", "R", "K"].forEach((ch, ri) => {
-    for (let a = 0; a < 360; a += step) html += `<div class="L" style="transform:rotateY(${a}deg) translateZ(1150px) translateY(${(ri - 1.5) * 300}px)">${ch}</div>`;
+    for (let a = 0; a < 360; a += step) html += `<div class="L" style="transform:rotateY(${a}deg) translateZ(${LR}px) translateY(${(ri - 1.5) * 300}px)">${ch}</div>`;
   });
   letters.innerHTML = html;
+  work.classList.toggle("work--phone", mobile);
   FILMS.forEach((f, i) => {
     const k = mobile || innerHeight > innerWidth ? 1.4 : 1;   // phones and portrait tablets: bigger films on the same ring, so each is easy to tap
     const [w, h] = SIZES[f.ar].map((d) => Math.round(d * k));
@@ -274,12 +300,13 @@ const buildWork = () => {
     el.addEventListener("click", () => openFilm(i));
     el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openFilm(i); } });
     ring.appendChild(el);
-    cards.push({ el, angle: i * (360 / FILMS.length), y: YOFF[i % YOFF.length], f, video: null });
+    cards.push({ el, angle: i * (360 / FILMS.length), y: YOFF[i % YOFF.length] * (mobile ? 0.4 : 1), f, video: null });
   });
   if (!canHover) $(".work__hint").textContent = "Tap a film to watch it with sound";
   // the stills load only as the ring comes near, so the first screen stays light
-  const posters = () => $$(".card__media[data-poster]", ring).forEach((m) => { m.style.backgroundImage = `url(${m.dataset.poster})`; m.removeAttribute("data-poster"); });
-  if ("IntersectionObserver" in window) {
+  const posters = loadPosters = () => $$(".card__media[data-poster]", ring).forEach((m) => { m.style.backgroundImage = `url(${m.dataset.poster})`; m.removeAttribute("data-poster"); });
+  if (motion) { /* the hero loop calls loadPosters as the ring starts to rise */ }
+  else if ("IntersectionObserver" in window) {
     const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { posters(); io.disconnect(); } }, { rootMargin: "50% 0px" });
     io.observe(work);
   } else posters();
@@ -306,17 +333,25 @@ const cardVideo = (c) => {
   c.video = v; return v;
 };
 let frontIdx = -1;
+let ringTarget = 0, ringP = 0, ringLive = false;
 const updateWork = (p = sectionProgress(work)) => {
   if (reduce || !cards.length) return;
-  const ringA = 18 - p * 372, lettersA = 8 - p * 372 * 0.55;
+  const ringA = 6 - p * 366, lettersA = 8 - p * 372 * 0.55;
   ring.style.transform = `translateZ(-2350px) rotateX(-3deg) rotateZ(-4deg) rotateY(${ringA}deg)`;
   letters.style.transform = `translateZ(-2350px) rotateX(-3deg) rotateZ(-4deg) rotateY(${lettersA}deg)`;
-  const inView = work.getBoundingClientRect().top < innerHeight && work.getBoundingClientRect().bottom > 0;
+  const wr = work.getBoundingClientRect();
+  const inView = wr.top < innerHeight * (motion ? 0.15 : 1) && wr.bottom > 0;
   let best = 0, bestD = 999;
   cards.forEach((c, i) => {
     const a = norm(c.angle + ringA);
-    c.el.style.transform = `rotateY(${c.angle}deg) translateZ(1480px) translateY(${c.y}px)`;
-    c.el.style.filter = `brightness(${(1 - Math.min(1, Math.abs(a) / 120) * 0.55).toFixed(3)})`;
+    if (!c.placed) { c.el.style.transform = `rotateY(${c.angle}deg) translateZ(1480px) translateY(${c.y}px)`; c.placed = true; }
+    const d = Math.abs(a);
+    // phones show the film in front and only a hint of its neighbours, which the narrow screen would cut anyway
+    const op = phoneRing ? (d > 70 ? 0 : 1 - ss(10, 34, d) * 0.82) : 1;
+    const br = (Math.round((1 - Math.min(1, d / 120) * 0.55) * 50) / 50).toFixed(2);
+    if (br !== c.br) { c.el.style.filter = `brightness(${br})`; c.br = br; }
+    const ops = (Math.round(op * 25) / 25).toFixed(2);
+    if (ops !== c.op) { c.el.style.opacity = ops; c.el.style.visibility = op > 0 ? "" : "hidden"; c.op = ops; }
     if (Math.abs(a) < bestD) { bestD = Math.abs(a); best = i; }
     const near = inView && Math.abs(a) < 42;
     if (near) { const v = cardVideo(c); if (v.paused) v.play().catch(() => {}); }
@@ -329,6 +364,7 @@ const updateWork = (p = sectionProgress(work)) => {
     const f = FILMS[best];
     $("#nowIdx").textContent = `${pad(best + 1)} / ${FILMS.length}`;
     $("#nowTitle").textContent = f.t;
+    if (motion) G.fromTo([$("#nowIdx"), $("#nowTitle"), $("#nowViews")], { yPercent: 70, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 0.6, stagger: 0.04, ease: "expo.out", overwrite: true });
     $("#nowKind").textContent = f.k;
     const nv = $("#nowViews"); nv.textContent = f.views || ""; nv.hidden = !f.views;
   }
@@ -383,13 +419,22 @@ const whenIn = (trigger, start = "top 82%") => ({ trigger, start, toggleActions:
 
 /* ---------- body classes and the corner labels ---------- */
 if (motion) {
-  ST.create({ trigger: hero, start: "bottom 50%", end: () => "+=" + document.documentElement.scrollHeight,
+  ST.create({ trigger: hero, start: "bottom bottom", end: () => "+=" + document.documentElement.scrollHeight,
     onEnter: () => document.body.classList.add("past-hero"), onLeaveBack: () => document.body.classList.remove("past-hero") });
-  ST.create({ trigger: work, start: "top 50%", end: "bottom 50%", toggleClass: { targets: document.body, className: "in-work" } });
+  // while the hero's last screen plays, the ring's stage waits fixed in place behind it (sticky takes over at the top)
+  ST.create({ trigger: work, start: "top bottom", end: "top top", toggleClass: { targets: workStage, className: "is-fixed" } });
+  ST.create({ trigger: work, start: "top 10%", end: "bottom 50%", toggleClass: { targets: document.body, className: "in-work" } });
   ST.create({ trigger: work, start: "top bottom", end: "bottom top",
-    onUpdate: () => updateWork(),
+    onUpdate: () => { ringTarget = sectionProgress(work); ringLive = true; },
     onToggle: (s) => { if (!s.isActive) cards.forEach((c) => c.video && c.video.pause()); },
-    onRefresh: () => updateWork() });
+    onRefresh: () => { ringTarget = ringP = sectionProgress(work); updateWork(ringP); } });
+  // a touch of weight: the ring eases after the scroll instead of being bolted to it, and sleeps once it has caught up
+  G.ticker.add(() => {
+    if (!ringLive) return;
+    ringP += (ringTarget - ringP) * 0.14;
+    if (Math.abs(ringTarget - ringP) < 0.00005) { ringP = ringTarget; ringLive = false; }
+    updateWork(ringP);
+  });
   $$("[data-section]").forEach((sec) => ST.create({ trigger: sec, start: "top 50%", end: "bottom 50%",
     onToggle: (s) => { if (s.isActive) $("#cnSection").textContent = sec.dataset.section; } }));
   const prog = $("#cnProgress");
@@ -405,13 +450,13 @@ if (motion) {
     const tl = G.timeline({ scrollTrigger: whenIn(head, "top 84%") });
     if (label) {
       tl.fromTo(label, { "--rule": 0 }, { "--rule": 1, duration: 1.3, ease: "expo.inOut" }, 0)
-        .from(label.children, { opacity: 0, x: -14, duration: 0.7, ease: "power3.out" }, 0.1);
+        .from(label.children, { opacity: 0, x: -14, duration: 1, ease: "expo.out" }, 0.1);
     }
     if (words.length) tl.from(words, { yPercent: 118, rotate: 3, duration: 1.05, ease: "expo.out", stagger: 0.045 }, 0.18);
     const rest = [...head.children].filter((el) => !el.matches(".label, h2, .letter__count, .letter__meter, .proof__stats") && !el.querySelector(".wi"));
-    if (rest.length) tl.from(rest, { opacity: 0, y: 22, duration: 0.8, ease: "power3.out", stagger: 0.08 }, 0.45);
+    if (rest.length) tl.from(rest, { opacity: 0, y: 22, duration: 1, ease: "expo.out", stagger: 0.08 }, 0.45);
   });
-  $$(".label--plain").forEach((l) => G.from(l, { opacity: 0, y: 16, duration: 0.8, ease: "power3.out", scrollTrigger: whenIn(l, "top 90%") }));
+  $$(".label--plain").forEach((l) => G.from(l, { opacity: 0, y: 16, duration: 1, ease: "expo.out", scrollTrigger: whenIn(l, "top 90%") }));
 }
 
 /* ---------- 3. made with: a marquee that speeds up and turns with the scroll ---------- */
@@ -437,32 +482,39 @@ if (motion) {
 })();
 
 /* ---------- 5. myths: struck through one by one, replaced by the truth ---------- */
+// the scroll picks the step; each step then plays on the clock, so a pause in the scroll never leaves a half-made frame:
+// the old truth rises out while the new myth arrives, its truth rises onto the centre line, and the strike lands quickly
 if (motion) {
-  const title = $(".myths__title"), dots = $$(".myths__dots i");
-  G.set(".myths__dots", { opacity: 0 });
-  let marks = [];
-  const tl = G.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: ".myths", start: "top top", end: "bottom bottom", scrub: 0.6,
-    onUpdate: () => { const t = tl.time(); dots.forEach((d, j) => d.classList.toggle("is-on", t >= marks[j])); } } });
-  tl.to({}, { duration: 0.3 })
-    .to(title, { yPercent: -14, opacity: 0, duration: 0.5, ease: "power1.in" })
-    .to(".myths__dots", { opacity: 1, duration: 0.3 }, "<");
+  const title = $(".myths__title"), dots = $$(".myths__dots i"), dotsWrap = $(".myths__dots");
   const items = $$(".myths__list li");
-  // the centre line is never empty: the next truth rises in as the last one rises out
-  items.forEach((li, i) => {
-    const myth = $(".myths__myth", li), strike = $(".strike", li), words = $$(".wi", li), line = $(".myths__line", li), n = $(".myths__n", li);
-    const prev = items[i - 1];
-    if (prev) tl.to([$(".myths__head", prev), $(".myths__line", prev)], { opacity: 0, y: -24, duration: 0.3, ease: "power1.in" });
-    tl.set(li, { visibility: "visible" }, prev ? ">" : "-=0.2")
-      .addLabel("m" + i, "<")
-      .from([n, myth], { opacity: 0, y: 34, duration: 0.35, stagger: 0.06, ease: "power2.out" }, "<")
-      .from(strike, { scaleX: 0, duration: 0.3, ease: "power2.inOut" }, "-=0.05")
-      .to(myth, { opacity: 0.4, duration: 0.2 });
-    if (prev) tl.to($$(".wi", prev), { yPercent: -118, duration: 0.35, stagger: 0.03, ease: "power2.in" }, "<");
-    tl.from(words, { yPercent: 118, duration: 0.4, stagger: 0.04, ease: "power3.out" }, prev ? "-=0.12" : "<")
-      .from(line, { opacity: 0, y: 16, duration: 0.3 }, "-=0.2")
-      .to({}, { duration: i === items.length - 1 ? 0.6 : 0.9 });
-  });
-  marks = items.map((_, i) => tl.labels["m" + i]);
+  const parts = items.map((li) => ({ li, n: $(".myths__n", li), head: $(".myths__head", li), myth: $(".myths__myth", li), strike: $(".myths__myth s", li), words: $$(".wi", li), line: $(".myths__line", li) }));
+  G.set(dotsWrap, { opacity: 0 });
+  let cur = -1;
+  const show = (i) => {
+    if (i === cur) return;
+    const dir = i > cur ? 1 : -1, out = cur;
+    cur = i;
+    parts.forEach((p, j) => { if (j !== i && j !== out) { G.killTweensOf([p.n, p.myth, p.strike, p.line, p.head, ...p.words]); G.set(p.li, { visibility: "hidden" }); } });
+    dots.forEach((d, j) => d.classList.toggle("is-on", j <= i));
+    G.to(dotsWrap, { opacity: i >= 0 ? 1 : 0, duration: 0.5, ease: "expo.out", overwrite: true });
+    if (out >= 0) {
+      const p = parts[out];
+      G.to([p.head, p.line], { opacity: 0, y: -18 * dir, duration: 0.3, ease: "power2.in", overwrite: true });
+      G.to(p.words, { yPercent: -118 * dir, duration: 0.26, stagger: 0.02, ease: "power2.in", overwrite: true,
+        onComplete: () => { if (cur !== out) G.set(p.li, { visibility: "hidden" }); } });
+    } else G.to(title, { opacity: 0, yPercent: -10, duration: 0.35, ease: "power2.in", overwrite: true });
+    if (i < 0) { G.to(title, { opacity: 1, yPercent: 0, duration: 0.9, delay: 0.15, ease: "expo.out", overwrite: true }); return; }
+    const p = parts[i], d0 = 0.06;
+    G.set(p.li, { visibility: "visible" });
+    G.set(p.head, { opacity: 1, y: 0 });
+    G.fromTo([p.n, p.myth], { opacity: 0, y: 24 * dir }, { opacity: 1, y: 0, duration: 0.8, stagger: 0.05, delay: d0, ease: "expo.out", overwrite: true });
+    G.fromTo(p.words, { yPercent: 118 * dir }, { yPercent: 0, duration: 0.9, stagger: 0.04, delay: d0 + 0.04, ease: "expo.out", overwrite: true });
+    G.fromTo(p.strike, { "--k": 0 }, { "--k": 1, duration: 0.4, delay: d0 + 0.22, ease: "expo.inOut", overwrite: true });
+    G.fromTo(p.myth, { color: "rgba(233, 228, 216, 1)" }, { color: "rgba(233, 228, 216, 0.42)", duration: 0.4, delay: d0 + 0.5, ease: "power2.out" });
+    G.fromTo(p.line, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.9, delay: d0 + 0.3, ease: "expo.out", overwrite: true });
+  };
+  ST.create({ trigger: ".myths", start: "top top", end: "bottom bottom",
+    onUpdate: (s) => show(s.progress < 0.1 ? -1 : Math.min(items.length - 1, Math.floor(((s.progress - 0.1) / 0.9) * items.length))) });
 }
 
 /* ---------- inline videos with sound on press (the breakdown player) ---------- */
@@ -557,7 +609,7 @@ if (motion) {
     "(max-width: 680px)": () => {
       $$(".method__step").forEach((step, i) => {
         ST.create({ trigger: step, start: "top 72%", onEnter: () => step.classList.add("is-on"), onLeaveBack: () => step.classList.remove("is-on") });
-        G.from(step.children, { y: 26, opacity: 0, duration: 0.7, stagger: 0.05, delay: (i % 2) * 0.08, ease: "power3.out", scrollTrigger: whenIn(step, "top 90%") });
+        G.from(step.children, { y: 26, opacity: 0, duration: 1, stagger: 0.05, delay: (i % 2) * 0.08, ease: "expo.out", scrollTrigger: whenIn(step, "top 90%") });
       });
       return () => $$(".method__step").forEach((s) => s.classList.remove("is-on"));
     },
@@ -568,10 +620,10 @@ if (motion) {
 if (motion) {
   $$(".sv__list li").forEach((li) => {
     G.from($("h3 > span", li), { yPercent: 110, duration: 1, ease: "expo.out", scrollTrigger: whenIn(li, "top 92%") });
-    G.from($$(".sv__i, p, .sv__go", li), { opacity: 0, duration: 0.8, delay: 0.2, ease: "power2.out", scrollTrigger: whenIn(li, "top 92%") });
+    G.from($$(".sv__i, p, .sv__go", li), { opacity: 0, duration: 1, delay: 0.2, ease: "expo.out", scrollTrigger: whenIn(li, "top 92%") });
   });
-  G.from(".sv__incl li", { opacity: 0, y: 16, duration: 0.6, stagger: 0.07, ease: "power2.out", scrollTrigger: whenIn(".sv__incl", "top 90%") });
-  G.from(".sv__q span", { opacity: 0, scale: 0.4, rotate: -25, duration: 0.9, stagger: 0.12, ease: "back.out(2)", scrollTrigger: whenIn(".sv__founding", "top 85%") });
+  G.from(".sv__incl li", { opacity: 0, y: 16, duration: 1, stagger: 0.07, ease: "expo.out", scrollTrigger: whenIn(".sv__incl", "top 90%") });
+  G.from(".sv__q span", { opacity: 0, scale: 0.8, rotate: -8, duration: 1, stagger: 0.12, ease: "expo.out", scrollTrigger: whenIn(".sv__founding", "top 85%") });
   G.from(".sv__ftxt, .sv__founding .btn", { opacity: 0, y: 30, duration: 1, stagger: 0.12, ease: "expo.out", scrollTrigger: whenIn(".sv__founding", "top 85%") });
 }
 (() => {
@@ -606,7 +658,7 @@ if (motion) {
     "(min-width: 681px)": () => G.to(".letter__meter i", { scaleY: 1, ease: "none", scrollTrigger: { trigger: ".letter__body", start: "top 70%", end: "bottom 60%", scrub: true } }),
     "(max-width: 680px)": () => G.to(".letter__meter i", { scaleX: 1, ease: "none", scrollTrigger: { trigger: ".letter__body", start: "top 70%", end: "bottom 60%", scrub: true } }),
   });
-  G.from(".letter__facts li", { opacity: 0, y: 30, duration: 0.8, stagger: 0.07, ease: "power3.out", scrollTrigger: whenIn(".letter__facts", "top 90%") });
+  G.from(".letter__facts li", { opacity: 0, y: 30, duration: 1, stagger: 0.07, ease: "expo.out", scrollTrigger: whenIn(".letter__facts", "top 90%") });
 })();
 
 /* ---------- 8. proof: the numbers count up ---------- */
@@ -620,13 +672,13 @@ if (motion) {
     tl.from(cell, { y: 30, duration: 0.7, ease: "expo.out" }, i * 0.12)
       .to(o, { v: +el.dataset.count, duration: 0.9, ease: "power3.out", onUpdate: () => (el.textContent = Math.round(o.v)) }, i * 0.12);
   });
-  G.from(".proof__dock li", { opacity: 0, y: 50, scale: 0.7, duration: 0.8, stagger: 0.06, ease: "back.out(1.7)", scrollTrigger: whenIn(".proof__dock", "top 88%") });
+  G.from(".proof__dock li", { opacity: 0, y: 50, scale: 0.9, duration: 1, stagger: 0.06, ease: "expo.out", scrollTrigger: whenIn(".proof__dock", "top 88%") });
   $$(".proof__mini [data-count]").forEach((el) => {
     const o = { v: 0 }, n = +el.dataset.count;
     el.textContent = "0";
     G.to(o, { v: n, duration: 1.4, ease: "power3.out", onUpdate: () => (el.textContent = Math.round(o.v)), scrollTrigger: { trigger: ".proof__ny", start: "top 80%", toggleActions: "play none none none" } });
   });
-  G.from(".proof__ny > *", { opacity: 0, y: 30, duration: 1, stagger: 0.1, ease: "power3.out", scrollTrigger: whenIn(".proof__ny", "top 85%") });
+  G.from(".proof__ny > *", { opacity: 0, y: 30, duration: 1, stagger: 0.1, ease: "expo.out", scrollTrigger: whenIn(".proof__ny", "top 85%") });
 }
 
 /* ---------- 10. faq: a tight accordion, one answer open at a time ---------- */
@@ -635,7 +687,7 @@ if (motion) {
   const close = (d) => {
     const a = $(".faq__a", d);
     if (!motion) { d.open = false; return; }
-    G.to(a, { height: 0, duration: 0.4, ease: "power2.inOut", onComplete: () => { d.open = false; a.style.height = ""; } });
+    G.to(a, { height: 0, duration: 0.5, ease: "expo.inOut", onComplete: () => { d.open = false; a.style.height = ""; } });
   };
   all.forEach((d) => {
     $("summary", d).addEventListener("click", (e) => {
@@ -643,7 +695,7 @@ if (motion) {
       if (d.open) { close(d); return; }
       all.forEach((o) => o !== d && o.open && close(o));
       d.open = true;
-      if (motion) G.fromTo($(".faq__a", d), { height: 0 }, { height: "auto", duration: 0.5, ease: "power3.out", onComplete: () => ($(".faq__a", d).style.height = "") });
+      if (motion) G.fromTo($(".faq__a", d), { height: 0 }, { height: "auto", duration: 0.7, ease: "expo.out", onComplete: () => ($(".faq__a", d).style.height = "") });
     });
   });
   // five questions up front; the rest one press away, so the end of the page never reads as a wall
@@ -656,10 +708,10 @@ if (motion) {
       extra.forEach((d) => (d.hidden = false));
       more.hidden = true;
       $("summary", extra[0]).focus();
-      if (motion) { G.from(extra, { opacity: 0, y: 18, duration: 0.6, stagger: 0.05, ease: "power2.out" }); ST.refresh(); }
+      if (motion) { G.from(extra, { opacity: 0, y: 18, duration: 1, stagger: 0.05, ease: "expo.out" }); ST.refresh(); }
     });
   }
-  if (motion) G.from(all.slice(0, 5), { opacity: 0, y: 24, duration: 0.7, stagger: 0.05, ease: "power2.out", scrollTrigger: whenIn(".faq__list", "top 85%") });
+  if (motion) G.from(all.slice(0, 5), { opacity: 0, y: 24, duration: 1, stagger: 0.05, ease: "expo.out", scrollTrigger: whenIn(".faq__list", "top 85%") });
 })();
 
 /* ---------- 11. contact: the last words slam in, the button pulls toward the pointer ---------- */
@@ -668,7 +720,7 @@ if (motion) {
   G.fromTo(".book", { clipPath: "inset(9% 5% 0% 5%)" }, { clipPath: "inset(0% 0% 0% 0%)", ease: "none",
     scrollTrigger: { trigger: ".book", start: "top bottom", end: "top 20%", scrub: true } });
   ST.create({ trigger: ".book", start: "top 55%", end: "bottom top", toggleClass: { targets: document.body, className: "in-book" } });
-  G.from(".book__row > *, .book__note", { opacity: 0, y: 30, duration: 0.9, stagger: 0.08, ease: "power3.out", scrollTrigger: whenIn(".book__row", "top 92%") });
+  G.from(".book__row > *, .book__note", { opacity: 0, y: 30, duration: 1, stagger: 0.08, ease: "expo.out", scrollTrigger: whenIn(".book__row", "top 92%") });
   G.fromTo(".book__row", { "--rule": 0 }, { "--rule": 1, duration: 1.3, ease: "expo.inOut", scrollTrigger: whenIn(".book__row", "top 92%") });
   if (canHover) {
     const btn = $(".book .btn"), qx = G.quickTo(btn, "x", { duration: 0.5, ease: "power3.out" }), qy = G.quickTo(btn, "y", { duration: 0.5, ease: "power3.out" });
@@ -690,8 +742,14 @@ if (motion) {
     label.textContent = txt; cur.classList.toggle("is-act", !!t);
   }, { passive: true });
   document.addEventListener("mouseleave", () => cur.classList.remove("is-visible"));
-  const loop = () => { x += (tx - x) * 0.22; y += (ty - y) * 0.22; cur.style.transform = `translate(${x}px, ${y}px)`; requestAnimationFrame(loop); };
-  loop();
+  // the follow loop sleeps once the dot has caught up, and wakes on the next move
+  let run = false;
+  const loop = () => {
+    x += (tx - x) * 0.22; y += (ty - y) * 0.22;
+    cur.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
+    if (Math.abs(tx - x) + Math.abs(ty - y) > 0.3) requestAnimationFrame(loop); else run = false;
+  };
+  window.addEventListener("mousemove", () => { if (!run) { run = true; requestAnimationFrame(loop); } }, { passive: true });
 })();
 
 /* ---------- sound toggle: hovering a playing film on the ring plays its audio ---------- */

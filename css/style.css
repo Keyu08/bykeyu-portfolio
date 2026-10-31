@@ -13,6 +13,9 @@
   --h-xl: clamp(56px, 9.4vw, 172px);         /* big section headlines */
   --h-l: clamp(44px, 6.4vw, 116px);          /* standard section headlines */
   --body-l: clamp(16px, 1.3vw, 20px);        /* supporting lines */
+  /* the two signature curves (GSAP: "expo.out" for every entrance, "expo.inOut" for wipes and swaps) */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-io: var(--ease-io);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { background: var(--bg); color: var(--bone); -webkit-text-size-adjust: 100%; }
@@ -50,7 +53,7 @@ p, dd, li, summary { text-wrap: pretty; }
 .label--plain::before, .label--plain::after { display: none; }
 
 .grain {
-  position: fixed; inset: 0; z-index: 90; pointer-events: none; opacity: 0.13; mix-blend-mode: overlay;
+  position: fixed; inset: 0; z-index: 90; pointer-events: none; opacity: 0.055;  /* plain blending: an overlay blend over the whole screen cost about a quarter of the frame rate */
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   animation: grain 0.9s steps(4) infinite;
 }
@@ -65,14 +68,14 @@ p, dd, li, summary { text-wrap: pretty; }
 @media (hover: none) { .cursor { display: none; } }
 
 /* ---------- loader ---------- */
-.loader { position: fixed; inset: 0; z-index: 100; background: #030303; display: none; place-items: center; cursor: pointer; transition: clip-path 0.9s cubic-bezier(0.7, 0, 0.2, 1); clip-path: inset(0 0 0 0);
-  animation: loaderOut 0.9s cubic-bezier(0.7, 0, 0.2, 1) 4.4s forwards; }  /* failsafe: it leaves even if scripts stall */
+.loader { position: fixed; inset: 0; z-index: 100; background: #030303; display: none; place-items: center; cursor: pointer; transition: clip-path 0.9s var(--ease-io); clip-path: inset(0 0 0 0);
+  animation: loaderOut 0.9s var(--ease-io) 4.4s forwards; }  /* failsafe: it leaves even if scripts stall */
 .js .loader { display: grid; }
 .loader.is-done { clip-path: inset(0 0 100% 0); pointer-events: none; }
 .loader.is-gone { display: none !important; }
 @keyframes loaderOut { to { clip-path: inset(0 0 100% 0); visibility: hidden; pointer-events: none; } }
 .loader__line { font: italic 400 clamp(38px, 7vw, 112px)/1 "Instrument Serif", Georgia, serif; text-align: center; padding: 0 var(--gut); letter-spacing: -0.01em; }
-.loader__line span { display: inline-block; opacity: 0; transform: translateY(0.3em); animation: word 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) forwards; animation-delay: calc(0.15s + var(--i, 0) * 0.36s); }
+.loader__line span { display: inline-block; opacity: 0; transform: translateY(0.3em); animation: word 0.9s var(--ease-out) forwards; animation-delay: calc(0.15s + var(--i, 0) * 0.36s); }
 @keyframes word { to { opacity: 1; transform: none; } }
 .loader__tc { position: absolute; left: var(--gut); bottom: 28px; color: var(--dim); }
 .loader__skip { position: absolute; right: var(--gut); bottom: 28px; color: var(--dim); }
@@ -134,6 +137,7 @@ html.is-loading body { overflow: hidden; }
 .tick--tc { bottom: 0; font-size: 10.5px; }
 .tick--tc .tick__track { animation-duration: 60s; }
 @keyframes tick { to { transform: translateX(-50%); } }
+.past-hero .tick__track { animation-play-state: paused; }
 
 .giant { position: absolute; z-index: 4; left: 0; right: 0; bottom: 38px; height: var(--giant-h, 212px); display: flex; align-items: center; justify-content: center; overflow: hidden; opacity: calc(1 - var(--z) * 4); }
 .giant__word { display: inline-flex; font: 400 200px/0.86 "Anton", sans-serif; text-transform: uppercase; white-space: nowrap; letter-spacing: 0.002em; transform: scaleY(1.06); }
@@ -150,28 +154,39 @@ html.is-loading body { overflow: hidden; }
 .hl__how { display: none; color: var(--dim); margin-top: 8px; }
 .hl__cta { display: none; align-items: center; justify-content: center; gap: 0.45em; height: 54px; padding: 0 24px; background: var(--bone); color: var(--bg); font-size: 21px; letter-spacing: 0.05em; white-space: nowrap; text-shadow: none; transition: background 0.3s; }
 .hl__cta:hover { background: var(--sky); }
-.hero__inside { position: absolute; z-index: 6; left: 50%; bottom: 8vh; transform: translateX(-50%); white-space: nowrap; padding: 8px 12px; background: rgba(5, 5, 5, 0.75); opacity: calc((var(--z) - 0.55) * 3); color: var(--bone); text-shadow: 0 1px 12px rgba(0, 0, 0, 0.8); }
-.hero__stage::after { content: ""; position: absolute; inset: 0; z-index: 7; background: var(--bg); opacity: calc((var(--z) - 0.92) * 12); pointer-events: none; }
+.hero__inside { position: absolute; z-index: 6; left: 50%; bottom: 8vh; transform: translateX(-50%); white-space: nowrap; padding: 8px 12px; background: rgba(5, 5, 5, 0.75); opacity: min(calc((var(--z) - 0.55) * 3), calc((0.88 - var(--z)) * 14)); color: var(--bone); text-shadow: 0 1px 12px rgba(0, 0, 0, 0.8); }
+.hero__stage::after { content: ""; position: absolute; inset: 0; z-index: 7; background: var(--bg); opacity: calc((var(--z) - 0.86) * 8); pointer-events: none; }
 
 /* ---------- 2. work ring ---------- */
 .work { position: relative; height: 410vh; }
 .work__stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
-.work__scale { position: absolute; left: 50%; top: 50%; width: 1440px; height: 900px; margin: -450px 0 0 -720px; transform: scale(var(--s, 1)); }
+.work__scale { position: absolute; left: 50%; top: 50%; width: 1440px; height: 900px; margin: -450px 0 0 -720px; transform: scale(calc(var(--s, 1) * (0.78 + 0.22 * var(--in, 1)))); }
+/* one camera move: the ring's stage is already pinned under the last screen of the hero, hidden,
+   and rises out of the dark as the camera passes through the pupil (--in, set from the hero's zoom) */
+.motion .work { margin-top: -100vh; margin-top: -100svh; pointer-events: none; }
+.motion .work__stage { pointer-events: auto; }
+.motion .work__stage { opacity: var(--in, 0); }
+.motion .work__stage.is-fixed { position: fixed; left: 0; right: 0; top: 0; }
+.motion .work__stage.is-out { visibility: hidden; }
+.motion .work__stage.is-dim { pointer-events: none; }
 .work__scene { position: absolute; inset: 0; perspective: 1400px; perspective-origin: 50% 50%; }
 .drum { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; will-change: transform; }
 .L { position: absolute; width: 220px; height: 300px; margin: -150px 0 0 -110px; display: flex; align-items: center; justify-content: center; font: 400 300px/1 "Anton", sans-serif; color: var(--bone); backface-visibility: hidden; -webkit-backface-visibility: hidden;
   text-shadow: 2px 2px 0 #3b3833, 4px 4px 0 #34312d, 6px 6px 0 #2d2a27, 8px 8px 0 #262421, 10px 10px 0 #1f1d1b, 12px 12px 0 #181715; }
+/* phones: the letters step back (smaller drum, dimmer, flatter shadow) so the films lead */
+.work--phone .L { color: rgba(233, 228, 216, 0.34); text-shadow: 3px 3px 0 #1d1c1a, 6px 6px 0 #121110; }
 .card { position: absolute; backface-visibility: hidden; -webkit-backface-visibility: hidden; cursor: pointer; }
 .card__media { position: relative; width: 100%; height: calc(100% - 44px); overflow: hidden; background: #111 center / cover no-repeat; }
 .card__media video { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.5s; }
 .card.is-playing .card__media video { opacity: 1; }
 .card__lab { margin-top: 10px; padding: 7px 0 0; font: 400 26px/1.1 "Anton", sans-serif; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* the film in front says it can be pressed */
-.card__play { position: absolute; z-index: 2; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0.8); display: inline-flex; align-items: center; gap: 0.6em; padding: 16px 24px 15px; background: var(--bone); color: var(--bg); font: 400 40px/1 "Anton", sans-serif; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; opacity: 0; transition: opacity 0.4s, transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1); pointer-events: none; }
+.card__play { position: absolute; z-index: 2; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0.8); display: inline-flex; align-items: center; gap: 0.6em; padding: 16px 24px 15px; background: var(--bone); color: var(--bg); font: 400 40px/1 "Anton", sans-serif; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; opacity: 0; transition: opacity 0.4s, transform 0.5s var(--ease-out); pointer-events: none; }
 .card.is-front .card__play { opacity: 1; transform: translate(-50%, -50%); }
 .card:hover .card__play { background: var(--sky); }
 .card:focus-visible { outline: 3px solid var(--sky); outline-offset: 8px; }
 .work__now { position: absolute; z-index: 5; left: 50%; bottom: 6vh; transform: translateX(-50%); display: flex; gap: 22px; align-items: baseline; white-space: nowrap; padding: 12px 22px 10px; background: rgba(5, 5, 5, 0.72); }
+.work__now > * { display: inline-block; }
 .work__now b { font: 400 clamp(28px, 2.8vw, 44px)/1 "Anton", sans-serif; letter-spacing: 0.03em; }
 .work__now span { color: var(--dim); }
 .work__now span:first-child { color: var(--sky); }
@@ -192,10 +207,13 @@ html.is-loading body { overflow: hidden; }
    (reduced motion, no JS); `.motion` turns on the pinned/scrubbed versions.
    ========================================================================== */
 .w { display: inline-block; overflow: hidden; vertical-align: top; padding: 0.08em 0.03em 0.04em; margin: -0.08em -0.03em -0.04em; }
-.wi { display: inline-block; will-change: transform; }
+.wi { display: inline-block; }
 
 .btn { display: inline-flex; align-items: center; gap: 0.5em; height: 72px; padding: 0 34px; background: var(--bone); color: var(--bg); font-size: 26px; letter-spacing: 0.04em; white-space: nowrap; transition: background 0.3s; }
 .btn:hover { background: var(--sky); }
+/* every booking arrow leans toward where it goes */
+.btn > span[aria-hidden], .cn--tr > span[aria-hidden], .hl__cta > span[aria-hidden], .sv__go > span[aria-hidden] { display: inline-block; transition: transform 0.5s var(--ease-out); }
+.btn:hover > span[aria-hidden], .cn--tr:hover > span[aria-hidden], .hl__cta:hover > span[aria-hidden], .sv__list a:hover .sv__go > span[aria-hidden] { transform: translate(3px, -3px); }
 .btn--xl { height: clamp(80px, 7.4vw, 112px); padding: 0 clamp(30px, 3.2vw, 52px); font-size: clamp(30px, 2.8vw, 46px); }
 
 /* ---------- 3. made with: the logos are the show ---------- */
@@ -219,8 +237,10 @@ html:not(.motion) .marq__track { flex-wrap: wrap; width: auto; justify-content: 
 .myths__list { list-style: none; display: grid; gap: 12vh; margin-top: 14vh; }
 .myths__n { display: block; color: var(--sky); margin-bottom: 2.4vh; }
 .myths__myth { font-size: clamp(28px, 3.6vw, 64px); line-height: 1.05; margin-bottom: 2.6vh; }
-.myths__myth s { position: relative; display: inline-block; text-decoration: none; }
-.strike { position: absolute; left: -2%; right: -2%; top: 54%; height: clamp(3px, 0.3vw, 5px); background: var(--sky); transform-origin: left center; }
+/* the strike is drawn on every line of the myth (so a myth that wraps on a phone is struck through on both lines) */
+.myths__myth s { text-decoration: none; padding: 0 0.06em; background: linear-gradient(var(--sky), var(--sky)) no-repeat 0 56% / calc(var(--k, 1) * 100%) clamp(3px, 0.3vw, 5px);
+  -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.strike { display: none; }
 .myths__truth { display: block; font-size: var(--h-xl); max-width: 14ch; }
 .myths__line { margin-top: 3.4vh; max-width: 30em; color: var(--dim); font-size: var(--body-l); }
 .motion .myths { height: 250vh; }
@@ -269,7 +289,7 @@ html:not(.motion) .marq__track { flex-wrap: wrap; width: auto; justify-content: 
 .motion .bd__beats { grid-column: 3; grid-row: 1; position: relative; border: 0; }
 .motion .bd__beats li { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); display: block; padding: 0; border: 0; pointer-events: none; }
 .motion .bd__beats li.is-on { pointer-events: auto; }
-.motion .bd__beats li > * { display: block; opacity: 0; transform: translateY(30px); transition: opacity 0.45s, transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.motion .bd__beats li > * { display: block; opacity: 0; transform: translateY(30px); transition: opacity 0.45s, transform 0.7s var(--ease-out); }
 .motion .bd__beats li.is-on > * { opacity: 1; transform: none; }
 .motion .bd__beats li.is-on > :nth-child(2) { transition-delay: 0.06s; }
 .motion .bd__beats li.is-on > :nth-child(3) { transition-delay: 0.12s; }
@@ -310,8 +330,8 @@ html:not(.motion) .marq__track { flex-wrap: wrap; width: auto; justify-content: 
 .sv__head { margin-bottom: 6vh; }
 .sv__title { font-size: var(--h-xl); }
 .sv__list { list-style: none; border-top: 1px solid var(--line); }
-.sv__list a { position: relative; isolation: isolate; display: grid; grid-template-columns: 70px minmax(0, 2fr) minmax(0, 1fr) auto; gap: 2vw; align-items: center; padding: clamp(14px, 2.4vh, 26px) 0; border-bottom: 1px solid var(--line); transition: color 0.35s, padding 0.45s cubic-bezier(0.7, 0, 0.2, 1); }
-.sv__list a::before { content: ""; position: absolute; z-index: -1; inset: 0 calc(var(--gut) * -1); background: var(--bone); transform: scaleY(0); transform-origin: bottom; transition: transform 0.45s cubic-bezier(0.7, 0, 0.2, 1); }
+.sv__list a { position: relative; isolation: isolate; display: grid; grid-template-columns: 70px minmax(0, 2fr) minmax(0, 1fr) auto; gap: 2vw; align-items: center; padding: clamp(14px, 2.4vh, 26px) 0; border-bottom: 1px solid var(--line); transition: color 0.35s, padding 0.45s var(--ease-io); }
+.sv__list a::before { content: ""; position: absolute; z-index: -1; inset: 0 calc(var(--gut) * -1); background: var(--bone); transform: scaleY(0); transform-origin: bottom; transition: transform 0.45s var(--ease-io); }
 .sv__list a:hover, .sv__list a:focus-visible { color: var(--bg); padding-left: 18px; }
 .sv__list a:hover::before, .sv__list a:focus-visible::before { transform: scaleY(1); }
 .sv__list a:focus-visible { outline-offset: -3px; }
@@ -528,8 +548,8 @@ html:not(.motion) .letter__count, html:not(.motion) .letter__meter { display: no
   .corners::before { height: 72px; }
   .made__head { flex-direction: column; gap: 10px; align-items: stretch; }
   .marq__track li { width: 128px; margin-right: 20px; gap: 12px; }
-  .myths__myth { font-size: clamp(28px, 8.8vw, 44px); }
-  .myths__truth { font-size: clamp(52px, 16vw, 92px); }
+  .myths__myth { font-size: clamp(24px, 7.2vw, 44px); }
+  .myths__truth { font-size: clamp(46px, 14.4vw, 92px); }
   .myths__line { font-size: 17px; }
   /* phones: the myth count frames the top, the dots the bottom, the truth fills the middle */
   .motion .myths__title { justify-content: center; padding: 76px 0 10vh; }

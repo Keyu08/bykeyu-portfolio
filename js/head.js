@@ -41,7 +41,7 @@ function buildHead(img) {
   const blackM = new THREE.MeshPhysicalMaterial({ color: 0x0c0a0c, roughness: 0.18, clearcoat: 1, metalness: 0.2 });
   const head = new THREE.Group();
 
-  const skull = new THREE.Mesh(new THREE.SphereGeometry(1, 96, 96), skin); skull.scale.set(1, 0.96, 0.93); head.add(skull);
+  const skull = new THREE.Mesh(new THREE.SphereGeometry(1, 72, 72), skin); skull.scale.set(1, 0.96, 0.93); head.add(skull);
   const cheek = new THREE.Mesh(new THREE.SphereGeometry(0.78, 64, 64), skin); cheek.position.set(0, -0.3, 0.18); cheek.scale.set(1.12, 0.85, 0.95); head.add(cheek);
   for (const s of [-1, 1]) {
     const ear = new THREE.Mesh(new THREE.SphereGeometry(0.2, 32, 32), skin); ear.position.set(s * 0.97, -0.12, 0.02); ear.scale.set(0.55, 1, 0.8); head.add(ear);
@@ -98,7 +98,7 @@ function buildHead(img) {
     if (a < 1.0) { const f = 1 - a; y += 0.045 * Math.sin(phi * 1.4 + 0.5) * f + 0.028 * Math.max(0, Math.cos(phi * 19)) * f; } // swoop and strand tips
     return y;
   };
-  const hg = new THREE.SphereGeometry(1, 320, 240), pos = hg.attributes.position, v = new THREE.Vector3();
+  const hg = new THREE.SphereGeometry(1, 256, 180), pos = hg.attributes.position, v = new THREE.Vector3();
   for (let i = 0; i < pos.count; i++) {
     v.fromBufferAttribute(pos, i); const phi = Math.atan2(v.x, v.z);
     const t = ss(hairline(phi) - 0.05, hairline(phi) + 0.008, v.y);
