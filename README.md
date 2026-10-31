@@ -8,19 +8,29 @@ Scroll scenes run on GSAP + ScrollTrigger, synced with Lenis smooth scrolling (a
 
 1. **Opening titles:** "Lights down, friend. Come in." appears word by word (once per visit, click to skip).
 2. **Hero:** a grid header, a field of lines that bends around a 3D chibi Keyu who turns to look at the
-   pointer, and a giant word cycling *Visual storyteller / Content strategist / Editor*.
+   pointer, and a giant word cycling *Visual storyteller / Content strategist / Editor*. Above the roles ticker,
+   the hero line says who, what and how to act at a glance ("Keyu Hu / Montréal · Short videos for brands. Made for
+   Instagram."); below 1280px, where the header's value line is hidden, it adds "Videos people watch to the end"
+   and its own "Book a free call" button, and the head centres in the space above it.
 3. **Into the eye:** scrolling flies the camera into his left eye; the pupil holds a film.
 4. **Work:** the films ride a ring around a drum of giant WORK letters. Scrolling turns both to the left,
    with the letters slower than the films. Press a film to watch it with sound and read its breakdown.
-5. **Made with:** a marquee of the black and white logo tiles (names in small type) that speeds up with the scroll.
-6. **Myths:** one pinned scene; each myth gets struck through and the truth rises on the centre line.
-7. **Breakdown:** pinned; scrolling steps through the five beats of The Art of Asking, the video jumps to
+   The two films with real view counts come right after the first one, and the "now playing" line shows
+   their views as a sky badge (`views` in `FILMS`).
+5. **Clients & partners:** a marquee of the black and white logo tiles (names in small type) that speeds up with the scroll.
+6. **Services:** five offers as a bold index; every row shows a "Book a call" tag (on phones too) and opens the booking popup.
+   Then what's included and Founding Brand Partners.
+7. **Myths:** one pinned scene; each myth gets struck through, and the new truth rises in on the centre line
+   as the last one rises out, so the centre line is never empty.
+8. **Breakdown:** pinned; scrolling steps through the five beats of The Art of Asking, the video jumps to
    each beat, and the real waveform fills as it plays (press for sound, or jump with the beat markers).
-8. **Method:** R H E A C I as a horizontal strip; each letter fills as it passes.
-9. **Services:** five offers as a bold index (each row books a call), what's included, Founding Brand Partners.
-10. **The letter:** every word lights up as you read, with a paragraph counter beside it.
-11. **Proof:** VisionnAIre numbers count up while pinned, recognition logos, Nymeris.
-12. **FAQ** (accordion) and the **booking** call to action.
+9. **Method:** R H E A C I as a horizontal strip; each letter fills as it passes.
+10. **Proof:** VisionnAIre numbers count up once, quickly, as soon as they enter (not scrubbed, never half-counted),
+    recognition logos, Nymeris.
+11. **The letter:** every word lights up as you read, with a paragraph counter beside it.
+12. **FAQ:** five questions up front, the rest behind "More questions", and a link to ask on the call.
+13. **Booking:** the end card. The lights come up: a bone section opens out to the full screen with the biggest
+    button on the page (the corner button steps aside there).
 
 Every section opens the same way: its label's hairline rule wipes in, then the headline's words rise out of a mask
 (mark a section head with `data-enter`, its label as `<p class="label mono"><span>…</span></p>`, the headline words with `data-split`).
@@ -51,8 +61,9 @@ every section fully visible, and a simple grid of films.
   `assets/videos/<id>.mp4` and `assets/posters/<id>.jpg`. The ring spaces any number of films evenly.
 - **Copy:** everything else is plain text in `index.html`. Headings marked `data-split` get the word-by-word reveal.
 - **Scene lengths:** the scroll length of each pinned scene is its section height in `css/style.css`
-  (`.hero`, `.work`, `.motion .myths`, `.motion .bd`, `.motion .proof__pin`); the method strip sizes itself
-  (`len()` in `js/main.js`). They are tuned so each step takes about one flick of the wheel (page about 20,700px at 1440x900).
+  (`.hero`, `.work`, `.motion .myths`, `.motion .bd`); portrait tablets get shorter ones (the `orientation: portrait` block near the end).
+  The method strip sizes itself (`len()` in `js/main.js`). They are tuned so each step takes about one flick of the wheel
+  (page about 20,200px at 1440x900 and at 768x1024, 21,100px at 390x844).
 - **Rhythm:** section padding and headline sizes are tokens at the top of `css/style.css` (`--sec`, `--h-xl`, `--h-l`, `--body-l`).
 
 ## Adding videos

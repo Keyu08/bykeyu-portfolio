@@ -169,7 +169,8 @@ function initHead(canvas, img) {
     const into = ep.clone().addScaledVector(fwd, lerp(0.95, 0.4, ss(0.3, 1, t)));
     const k = ss(0, 0.85, t);
     cam.position.set(lerp(heroPos.x, into.x, k), lerp(heroPos.y, into.y, k), lerp(heroPos.z, into.z, k));
-    const look = new THREE.Vector3(lerp(pivot.position.x, ep.x, k), lerp(pivot.position.y - 0.05, ep.y, k), lerp(0, ep.z, k));
+    // the camera looks straight ahead, so the head really sits at (cx, cy) instead of the canvas centre
+    const look = new THREE.Vector3(lerp(0, ep.x, k), lerp(0.05, ep.y, k), lerp(0, ep.z, k));
     cam.lookAt(look);
     for (const m of irisMats) { m.emissiveIntensity = ss(0.25, 0.8, t) * 0.8; m.map = t > 0.35 ? brightMap : dimMap; }
     for (const h of highlights) h.visible = t < 0.3;
