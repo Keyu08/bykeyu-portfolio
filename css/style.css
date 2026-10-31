@@ -166,6 +166,10 @@ html.is-loading body { overflow: hidden; }
 .card__media video { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.5s; }
 .card.is-playing .card__media video { opacity: 1; }
 .card__lab { margin-top: 10px; padding: 7px 0 0; font: 400 26px/1.1 "Anton", sans-serif; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* the film in front says it can be pressed */
+.card__play { position: absolute; z-index: 2; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0.8); display: inline-flex; align-items: center; gap: 0.6em; padding: 16px 24px 15px; background: var(--bone); color: var(--bg); font: 400 40px/1 "Anton", sans-serif; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap; opacity: 0; transition: opacity 0.4s, transform 0.5s cubic-bezier(0.2, 0.7, 0.2, 1); pointer-events: none; }
+.card.is-front .card__play { opacity: 1; transform: translate(-50%, -50%); }
+.card:hover .card__play { background: var(--sky); }
 .card:focus-visible { outline: 3px solid var(--sky); outline-offset: 8px; }
 .work__now { position: absolute; z-index: 5; left: 50%; bottom: 6vh; transform: translateX(-50%); display: flex; gap: 22px; align-items: baseline; white-space: nowrap; padding: 12px 22px 10px; background: rgba(5, 5, 5, 0.72); }
 .work__now b { font: 400 clamp(28px, 2.8vw, 44px)/1 "Anton", sans-serif; letter-spacing: 0.03em; }
@@ -289,6 +293,7 @@ html:not(.motion) .marq__track { flex-wrap: wrap; width: auto; justify-content: 
 .method__step h3 { font-size: clamp(30px, 2.6vw, 44px); line-height: 1.05; margin: 6px 0 8px; }
 .method__step p { color: var(--dim); }
 .method__bar { display: none; }
+@media (min-width: 681px) {
 .motion .method { padding: 0; }
 .motion .method__stage { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
 .motion .method__track { display: flex; height: 100%; width: max-content; border: 0; padding: 0 var(--gut); will-change: transform; }
@@ -297,6 +302,7 @@ html:not(.motion) .marq__track { flex-wrap: wrap; width: auto; justify-content: 
 .motion .method__step:last-child { border-right: 1px solid var(--line); }
 .motion .method__step b { font-size: clamp(180px, 46vh, 480px); margin: auto 0 4vh; }
 .motion .method__bar { display: block; position: absolute; left: var(--gut); right: var(--gut); bottom: 6vh; height: 1px; background: var(--line); }
+}
 .method__bar i { position: absolute; inset: -1px 0; background: var(--sky); transform-origin: left; transform: scaleX(0); }
 
 /* ---------- 7. services: a bold index ---------- */
@@ -391,13 +397,13 @@ html:not(.motion) .letter__count, html:not(.motion) .letter__meter { display: no
 .faq__ask { margin-top: 3.4vh; color: var(--dim); font-size: var(--body-l); max-width: 22em; }
 .faq__ask a { color: var(--bone); transition: color 0.3s; }
 .faq__ask a:hover { color: var(--sky); }
-.faq__more { display: inline-flex; gap: 0.8em; margin-top: 18px; padding: 12px 0 8px; color: var(--sky); border-bottom: 1px solid currentColor; }
+.faq__more { display: inline-flex; align-items: center; gap: 0.8em; min-height: 44px; margin-top: 18px; padding: 12px 0 8px; color: var(--sky); border-bottom: 1px solid currentColor; }
 .faq__more[hidden] { display: none; }
 .faq__more span { color: var(--dim); }
 
 /* ---------- 11. contact: the lights come up, the strongest moment of the page ---------- */
 .book { --ink: #050505; --ink-dim: rgba(5, 5, 5, 0.62); --ink-line: rgba(5, 5, 5, 0.2);
-  min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding: var(--sec) var(--gut) 8vh;
+  min-height: calc(100vh - var(--foot-h, 0px)); min-height: calc(100svh - var(--foot-h, 0px)); display: flex; flex-direction: column; justify-content: center; padding: var(--sec) var(--gut) 8vh;
   background: var(--bone); color: var(--ink); }
 .book .label { color: var(--ink-dim); }
 .book .label::before { background: var(--ink); }
@@ -427,7 +433,8 @@ html:not(.motion) .letter__count, html:not(.motion) .letter__meter { display: no
 .film { position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none; border: 0; padding: 0; background: rgba(3, 3, 3, 0.97); color: var(--bone); display: none; }
 .film[open] { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(300px, 1fr); }
 .film::backdrop { background: rgba(0, 0, 0, 0.7); }
-.film__close { position: absolute; z-index: 2; right: var(--gut); top: 22px; padding: 8px 0; border-bottom: 1px solid currentColor; }
+.film__close { position: absolute; z-index: 3; right: var(--gut); top: 16px; min-height: 44px; padding: 12px 16px 10px; background: rgba(5, 5, 5, 0.8); border: 1px solid var(--line); transition: background 0.3s, color 0.3s; }
+.film__close:hover { background: var(--bone); color: var(--bg); }
 .film__media { display: grid; place-items: center; padding: 6vh 3vw; min-height: 0; }
 .film__media video { max-width: 100%; max-height: 88vh; background: #000; }
 .film__info { padding: 9vh var(--gut) 4vh 0; overflow-y: auto; }
@@ -464,9 +471,13 @@ html:not(.motion) .letter__count, html:not(.motion) .letter__meter { display: no
   .hg__mark b { font-size: 32px; }
   .hg__cta { font-size: 20px; }
   .hg__cta small { display: none; }
-  .film[open] { grid-template-columns: 1fr; overflow-y: auto; }
-  .film__media video { max-height: 62vh; }
-  .film__info { padding: 0 var(--gut) 8vh; }
+  /* one scrolling column: the film first, then the notes, the booking bar pinned to the bottom */
+  .film[open] { display: block; overflow-y: auto; overscroll-behavior: contain; }
+  .film__close { position: fixed; top: calc(12px + env(safe-area-inset-top)); }
+  .film__media { padding: 72px var(--gut) 3vh; }
+  .film__media video { max-height: 64vh; max-height: 64svh; }
+  .film__info { padding: 0 var(--gut); overflow: visible; }
+  .film__act { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
   .faq { grid-template-columns: 1fr; gap: 6vh; }
   .book__title { font-size: min(14vw, 20vh); }
   .book__row { grid-template-columns: auto minmax(0, 1fr); }
@@ -495,7 +506,8 @@ html:not(.motion) .letter__count, html:not(.motion) .letter__meter { display: no
   .label { margin-bottom: 20px; }
   .hg { grid-template-columns: 1fr auto; }
   .hg__nav, .hg__icon { display: none; }
-  .hg__mark { flex-direction: row; align-items: center; gap: 6px; }
+  .hg__mark { flex-direction: row; align-items: center; justify-content: flex-start; gap: 6px; padding-left: var(--gut); }
+  .flat .work__list { grid-template-columns: 1fr 1fr; gap: 28px 14px; }
   .hg__mark b { font-size: 26px; }
   .hg__cta { font-size: 15px; padding: 0 16px; }
   .hg__cta br, .hg__cta small { display: none; }
@@ -507,28 +519,50 @@ html:not(.motion) .letter__count, html:not(.motion) .letter__meter { display: no
   .giant { bottom: 32px; }
   .foot { grid-template-columns: 1fr 1fr; }
   .work__now b { font-size: 26px; }
+  .card__lab { font-size: 34px; }
+  .card__play { font-size: 46px; padding: 20px 28px 18px; }
   .work__now { gap: 12px; bottom: 9vh; padding: 10px 14px 8px; }
   #nowKind { display: none; }
   .cn--bl, .cn--br { display: none; }
-  .cn--tr { top: 12px; padding: 12px 14px 11px; font-size: 15px; }
+  .cn--tr { top: 12px; min-height: 44px; padding: 14px 14px 13px; font-size: 15px; }
   .corners::before { height: 72px; }
   .made__head { flex-direction: column; gap: 10px; align-items: stretch; }
   .marq__track li { width: 128px; margin-right: 20px; gap: 12px; }
-  .myths__myth { font-size: clamp(26px, 7.6vw, 40px); }
-  .myths__truth { font-size: clamp(50px, 15vw, 80px); }
+  .myths__myth { font-size: clamp(28px, 8.8vw, 44px); }
+  .myths__truth { font-size: clamp(52px, 16vw, 92px); }
+  .myths__line { font-size: 17px; }
+  /* phones: the myth count frames the top, the dots the bottom, the truth fills the middle */
+  .motion .myths__title { justify-content: center; padding: 76px 0 10vh; }
+  .motion .myths__title .anton { font-size: clamp(56px, 17vw, 90px); }
+  .motion .myths__title .serif { font-size: clamp(28px, 8.4vw, 40px); }
+  .motion .myths__n { position: absolute; left: 0; right: 0; top: 92px; margin: 0; }
+  .motion .myths__head { padding-bottom: 2.6vh; }
+  .motion .myths__line { margin-top: 2.6vh; }
+  .motion .myths__dots { bottom: 6vh; }
+  .myths__dots i { width: 44px; height: 3px; }
   .bd__stage { grid-template-columns: 1fr; }
   .bd__player { max-width: 260px; }
-  .motion .bd__stage { padding: 76px var(--gut) 3vh; }
-  .motion .bd__player { max-height: 44vh; }
-  .motion .bd__n { font-size: 74px; }
+  /* phones: the video on top, the big beat number beside it, the beat in full width below */
+  .motion .bd__stage { --vh: min(36svh, 330px); padding: 78px var(--gut) 2.4vh; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 2.2vh 0; }
+  .motion .bd__title { font-size: clamp(30px, 8.6vw, 40px); }
+  .motion .bd__player { grid-column: 1; grid-row: 2; height: var(--vh); max-height: none; width: auto; justify-self: start; }
+  .motion .bd__beats { grid-column: 1; grid-row: 3; }
+  .motion .bd__beats li { top: 0; transform: none; }
+  .motion .bd__n { position: absolute; left: calc(var(--vh) * 0.5625 + 22px); bottom: calc(100% + 2.2vh); font-size: clamp(84px, 26vw, 120px); margin: 0; }
   .motion .bd__t { font-size: 12px; }
-  .motion .bd__beats b { font-size: clamp(26px, 7.6vw, 36px); max-width: none; }
-  .motion .bd__beats p { font-size: 15px; }
-  .bd__marks button { font-size: 12px; }
-  .motion .method__step { flex-basis: 78vw; padding: 12vh 6vw 13vh; }
-  .motion .method__step b { font-size: clamp(160px, 38vh, 330px); }
-  .motion .method__intro { flex-basis: 86vw; padding-right: 8vw; }
-  .method__track { grid-template-columns: 1fr; }
+  .motion .bd__beats b { font-size: clamp(30px, 8.6vw, 40px); margin: 0.8vh 0 1vh; max-width: none; }
+  .motion .bd__beats p { font-size: 15px; max-width: 34ch; }
+  .motion .bd__wave { grid-row: 4; }
+  .motion .bd__wave svg { height: 40px; }
+  .bd__marks { height: 40px; }
+  .bd__marks button { font-size: 12px; min-width: 44px; height: 44px; padding: 6px 12px 22px 0; text-align: left; }
+  /* phones: the six steps as a compact 2-column grid, every cell full */
+  .method__track { grid-template-columns: 1fr 1fr; }
+  .method__intro { padding-bottom: 5vh; }
+  .method__step { padding: 18px 14px 22px; }
+  .method__step b { font-size: 84px; margin-bottom: 14px; }
+  .method__step h3 { font-size: 27px; margin: 4px 0 6px; }
+  .method__step p { font-size: 14px; line-height: 1.45; }
   .sv__list a { grid-template-columns: 34px minmax(0, 1fr); gap: 4px 12px; }
   .sv__go { grid-column: 2; grid-row: 3; justify-self: start; margin-top: 8px; padding: 8px 12px 7px; }
   .sv__list h3 { font-size: clamp(38px, 11.4vw, 60px); }
@@ -552,9 +586,17 @@ html:not(.motion) .letter__count, html:not(.motion) .letter__meter { display: no
   .proof__mini dt { font-size: 72px; }
   .faq__list summary { grid-template-columns: 34px minmax(0, 1fr) 20px; font-size: 20px; }
   .faq__a p { padding: 0 8px 22px 34px; font-size: 15px; }
-  .book__title { font-size: clamp(60px, 18vw, 100px); }
-  .book__row { grid-template-columns: 1fr; gap: 20px; }
-  .btn--xl { width: 100%; justify-content: center; height: 84px; font-size: 32px; }
+  /* the end card and the footer share the last screen: every line of the card fits a phone */
+  .book { padding: 84px var(--gut) 4vh; }
+  .book .label { margin-bottom: 16px; }
+  .book__title { font-size: clamp(56px, 17vw, 92px); }
+  .book__row { grid-template-columns: 1fr; gap: 16px; margin-top: 3.4vh; padding-top: 3.4vh; }
+  .btn--xl { width: 100%; justify-content: center; height: 76px; font-size: 30px; }
+  .book__lead { font-size: 16px; }
+  .book__mail { font-size: 22px; }
+  .book__note { margin-top: 2.6vh; }
+  .foot { gap: 0 20px; padding-top: 10px; }
+  .foot a { padding: 12px 0; }
 }
 
 /* ---------- portrait tablets: shorter scenes, so the page stays about as long as on desktop ---------- */
@@ -563,6 +605,11 @@ html:not(.motion) .letter__count, html:not(.motion) .letter__meter { display: no
   .work { height: 330vh; }
   .motion .myths { height: 215vh; }
   .motion .bd { height: 200vh; }
+  /* the myths fill the tall screen */
+  .myths__myth { font-size: 5.6vw; }
+  .myths__truth { font-size: 13vw; }
+  .myths__line { font-size: 21px; }
+  .motion .myths__title .anton { font-size: 12vw; }
 }
 
 /* ---------- reduced motion ---------- */

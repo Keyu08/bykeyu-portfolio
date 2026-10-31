@@ -170,7 +170,7 @@ const measure = () => {
   const fieldH = headBottom - hgH;
   layout.W = W; layout.H = H; layout.top = hgH; layout.bottom = tickTop;
   layout.cx = W / 2; layout.cy = hgH + fieldH * 0.5;
-  layout.size = Math.max(140, Math.min(fieldH * 0.78, W * (W < 680 ? 0.66 : 0.4)));
+  layout.size = Math.max(140, Math.min(fieldH * 0.78, W * (W < 680 ? 0.66 : H > W ? 0.58 : 0.4)));
   const dpr = Math.min(2, devicePixelRatio || 1);
   field.width = W * dpr; field.height = H * dpr; fctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 };
@@ -264,25 +264,34 @@ const buildWork = () => {
   });
   letters.innerHTML = html;
   FILMS.forEach((f, i) => {
-    const [w, h] = SIZES[f.ar];
+    const k = mobile || innerHeight > innerWidth ? 1.4 : 1;   // phones and portrait tablets: bigger films on the same ring, so each is easy to tap
+    const [w, h] = SIZES[f.ar].map((d) => Math.round(d * k));
     const el = document.createElement("div");
     el.className = "card"; el.tabIndex = 0; el.setAttribute("role", "button");
     el.setAttribute("aria-label", `Watch ${f.t}, ${f.k}`);
     el.style.cssText = `width:${w}px;height:${h + 44}px;margin:${-(h + 44) / 2}px 0 0 ${-w / 2}px`;
-    el.innerHTML = `<div class="card__media" style="background-image:url(assets/posters/${f.id}.jpg)"></div><div class="card__lab">${f.t}</div>`;
+    el.innerHTML = `<div class="card__media" data-poster="assets/posters/${f.id}.jpg"><span class="card__play" aria-hidden="true">▶ Watch</span></div><div class="card__lab">${f.t}</div>`;
     el.addEventListener("click", () => openFilm(i));
     el.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openFilm(i); } });
     ring.appendChild(el);
     cards.push({ el, angle: i * (360 / FILMS.length), y: YOFF[i % YOFF.length], f, video: null });
   });
   if (!canHover) $(".work__hint").textContent = "Tap a film to watch it with sound";
+  // the stills load only as the ring comes near, so the first screen stays light
+  const posters = () => $$(".card__media[data-poster]", ring).forEach((m) => { m.style.backgroundImage = `url(${m.dataset.poster})`; m.removeAttribute("data-poster"); });
+  if ("IntersectionObserver" in window) {
+    const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { posters(); io.disconnect(); } }, { rootMargin: "50% 0px" });
+    io.observe(work);
+  } else posters();
   // the same films as a plain list, for reduced motion
   $(".work__list").innerHTML = FILMS.map((f, i) => `<li><button type="button" data-film="${i}"><img src="assets/posters/${f.id}.jpg" alt="" loading="lazy" /><span class="mono">${pad(i + 1)} ${f.t}</span><br /><span class="mono dim">${f.k}</span>${f.views ? ` <span class="mono sky">${f.views}</span>` : ""}</button></li>`).join("");
   $$(".work__list [data-film]").forEach((b) => b.addEventListener("click", () => openFilm(+b.dataset.film)));
 };
 const scaleWork = () => {
   const W = innerWidth, H = innerHeight;
-  scaleEl.style.setProperty("--s", W < 760 ? (W / 820).toFixed(3) : Math.min(W / 1440, H / 900).toFixed(3));
+  // phones and portrait tablets zoom in on the front of the ring, so the films are big enough to tap
+  const s = W < 760 ? W / 640 : H > W ? Math.min(W / 1000, H / 1100) : Math.min(W / 1440, H / 900);
+  scaleEl.style.setProperty("--s", s.toFixed(3));
 };
 const norm = (a) => ((((a + 180) % 360) + 360) % 360) - 180;
 const cardVideo = (c) => {
@@ -298,7 +307,7 @@ const cardVideo = (c) => {
 };
 let frontIdx = -1;
 const updateWork = (p = sectionProgress(work)) => {
-  if (reduce) return;
+  if (reduce || !cards.length) return;
   const ringA = 18 - p * 372, lettersA = 8 - p * 372 * 0.55;
   ring.style.transform = `translateZ(-2350px) rotateX(-3deg) rotateZ(-4deg) rotateY(${ringA}deg)`;
   letters.style.transform = `translateZ(-2350px) rotateX(-3deg) rotateZ(-4deg) rotateY(${lettersA}deg)`;
@@ -314,7 +323,9 @@ const updateWork = (p = sectionProgress(work)) => {
     else if (c.video && !c.video.paused) c.video.pause();
   });
   if (best !== frontIdx) {
+    if (frontIdx >= 0) cards[frontIdx].el.classList.remove("is-front");
     frontIdx = best;
+    cards[best].el.classList.add("is-front");
     const f = FILMS[best];
     $("#nowIdx").textContent = `${pad(best + 1)} / ${FILMS.length}`;
     $("#nowTitle").textContent = f.t;
@@ -522,21 +533,34 @@ function syncBreakdown(v) {
   beats.forEach((b, i) => b.addEventListener("click", () => seek(i)));
 }
 
-/* ---------- 7. method: the strip slides left, each letter fills as it passes ---------- */
+/* ---------- 7. method: the strip slides left, each letter fills as it passes (phones: a 2-column grid, letters fill as they scroll in) ---------- */
 if (motion) {
   const sec = $(".method"), track = $(".method__track");
-  const dist = () => Math.max(0, track.scrollWidth - innerWidth);
-  // the strip moves faster than the page, so the scene stays short
-  const len = () => innerHeight + dist() * 0.5 + "px";
-  ST.addEventListener("refreshInit", () => (sec.style.height = len()));
-  sec.style.height = len();
-  const slide = G.to(track, { x: () => -dist(), ease: "none", scrollTrigger: { trigger: sec, start: "top top", end: "bottom bottom", scrub: 0.6, invalidateOnRefresh: true } });
-  G.to(".method__bar i", { scaleX: 1, ease: "none", scrollTrigger: { trigger: sec, start: "top top", end: "bottom bottom", scrub: 0.6 } });
-  $$(".method__step").forEach((step) => {
-    ST.create({ trigger: step, containerAnimation: slide, start: "left 78%",
-      onEnter: () => step.classList.add("is-on"), onLeaveBack: () => step.classList.remove("is-on") });
-    G.from(step.querySelectorAll("h3, p, .mono"), { y: 40, opacity: 0, stagger: 0.06, ease: "power2.out",
-      scrollTrigger: { trigger: step, containerAnimation: slide, start: "left 90%", end: "left 55%", scrub: true } });
+  ST.matchMedia({
+    "(min-width: 681px)": () => {
+      const dist = () => Math.max(0, track.scrollWidth - innerWidth);
+      // the strip moves faster than the page, so the scene stays short
+      const len = () => innerHeight + dist() * 0.5 + "px";
+      const setLen = () => (sec.style.height = len());
+      ST.addEventListener("refreshInit", setLen);
+      setLen();
+      const slide = G.to(track, { x: () => -dist(), ease: "none", scrollTrigger: { trigger: sec, start: "top top", end: "bottom bottom", scrub: 0.6, invalidateOnRefresh: true } });
+      G.to(".method__bar i", { scaleX: 1, ease: "none", scrollTrigger: { trigger: sec, start: "top top", end: "bottom bottom", scrub: 0.6 } });
+      $$(".method__step").forEach((step) => {
+        ST.create({ trigger: step, containerAnimation: slide, start: "left 78%",
+          onEnter: () => step.classList.add("is-on"), onLeaveBack: () => step.classList.remove("is-on") });
+        G.from(step.querySelectorAll("h3, p, .mono"), { y: 40, opacity: 0, stagger: 0.06, ease: "power2.out",
+          scrollTrigger: { trigger: step, containerAnimation: slide, start: "left 90%", end: "left 55%", scrub: true } });
+      });
+      return () => { ST.removeEventListener("refreshInit", setLen); sec.style.height = ""; G.set(track, { clearProps: "transform" }); $$(".method__step").forEach((s) => s.classList.remove("is-on")); };
+    },
+    "(max-width: 680px)": () => {
+      $$(".method__step").forEach((step, i) => {
+        ST.create({ trigger: step, start: "top 72%", onEnter: () => step.classList.add("is-on"), onLeaveBack: () => step.classList.remove("is-on") });
+        G.from(step.children, { y: 26, opacity: 0, duration: 0.7, stagger: 0.05, delay: (i % 2) * 0.08, ease: "power3.out", scrollTrigger: whenIn(step, "top 90%") });
+      });
+      return () => $$(".method__step").forEach((s) => s.classList.remove("is-on"));
+    },
   });
 }
 
@@ -696,7 +720,8 @@ document.addEventListener("click", (e) => {
 });
 
 /* ---------- boot ---------- */
-const onResize = () => { fitGiant(); measure(); scaleWork(); head?.resize(); if (!motion) updateWork(); };
+const foot = $(".foot");
+const onResize = () => { root.style.setProperty("--foot-h", foot.offsetHeight + "px"); fitGiant(); measure(); scaleWork(); head?.resize(); if (!motion) updateWork(); };
 buildWork();
 document.fonts?.ready.then(() => { onResize(); if (motion) ST.refresh(); });
 window.addEventListener("resize", onResize);

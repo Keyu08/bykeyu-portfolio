@@ -15,7 +15,9 @@ copy, with a watchdog that puts the word back if a swap ever stalls, so it is ne
    and its own "Book a free call" button, and the head centres in the space above it.
 3. **Into the eye:** scrolling flies the camera into his left eye; the pupil holds a film.
 4. **Work:** the films ride a ring around a drum of giant WORK letters. Scrolling turns both to the left,
-   with the letters slower than the films. Press a film to watch it with sound and read its breakdown.
+   with the letters slower than the films. The film in front carries a "Watch" tag; press it to watch with sound and read its breakdown.
+   On phones and portrait tablets the ring zooms in and the films are drawn 1.4x bigger, so each is easy to tap.
+   The stills load only as the ring comes near, and no video loads before it is needed.
    The two films with real view counts come right after the first one, and the "now playing" line shows
    their views as a sky badge (`views` in `FILMS`).
 5. **Clients and partners:** a marquee of the black and white logo tiles (names in small type) that speeds up with the scroll.
@@ -23,15 +25,17 @@ copy, with a watchdog that puts the word back if a swap ever stalls, so it is ne
    Then what's included and Founding Brand Partners.
 7. **Myths:** one pinned scene; each myth gets struck through, and the new truth rises in on the centre line
    as the last one rises out, so the centre line is never empty.
-8. **Breakdown:** pinned; scrolling steps through the five beats of The Art of Asking, the video jumps to
-   each beat, and the real waveform fills as it plays (press for sound, or jump with the beat markers).
-9. **Method:** R H E A C I as a horizontal strip; each letter fills as it passes.
+8. **Breakdown:** pinned; scrolling steps through the five beats of The Art of Asking (on phones: the video on top,
+   the beat number beside it, the beat below), the video jumps to each beat, and the real waveform fills as it plays (press for sound, or jump with the beat markers).
+9. **Method:** R H E A C I as a horizontal strip; each letter fills as it passes. On phones (≤680px) it is a 2-column grid instead,
+   and each letter fills as it scrolls in.
 10. **Proof:** VisionnAIre numbers count up once, quickly, as soon as they enter (not scrubbed, never half-counted),
     recognition logos, Nymeris.
 11. **The letter:** every word lights up as you read, with a paragraph counter beside it.
 12. **FAQ:** five questions up front, the rest behind "More questions", and a link to ask on the call.
 13. **Booking:** the end card. The lights come up: a bone section opens out to the full screen with the biggest
-    button on the page (the corner button steps aside there).
+    button on the page (the corner button steps aside there). It is one screen minus the footer (`--foot-h`), so at the end
+    of the page the whole card and the footer are in view together.
 
 Every section opens the same way: its label's hairline rule wipes in, then the headline's words rise out of a mask
 (mark a section head with `data-enter`, its label as `<p class="label mono"><span>…</span></p>`, the headline words with `data-split`).
@@ -67,7 +71,7 @@ every section fully visible, and a simple grid of films.
 - **Scene lengths:** the scroll length of each pinned scene is its section height in `css/style.css`
   (`.hero`, `.work`, `.motion .myths`, `.motion .bd`); portrait tablets get shorter ones (the `orientation: portrait` block near the end).
   The method strip sizes itself (`len()` in `js/main.js`). They are tuned so each step takes about one flick of the wheel
-  (page about 20,200px at 1440x900 and at 768x1024, 21,100px at 390x844).
+  (page about 20,200px at 1440x900 and at 768x1024, 20,200px at 390x844).
 - **Rhythm:** section padding and headline sizes are tokens at the top of `css/style.css` (`--sec`, `--h-xl`, `--h-l`, `--body-l`).
 
 ## Adding videos
