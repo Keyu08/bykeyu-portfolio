@@ -20,11 +20,33 @@
 <body>
   <!-- ============ Loader: opening titles ============ -->
   <div class="loader" id="loader" aria-hidden="true">
-    <p class="loader__line"><span>Lights</span> <span>down,</span> <span>friend.</span> <span>Come</span> <span>in.</span></p>
+    <p class="loader__line"><span style="--i:0">Lights</span> <span style="--i:1">down,</span> <span style="--i:2">friend.</span> <span style="--i:3">Come</span> <span style="--i:4">in.</span></p>
     <span class="loader__tc mono" id="loaderTc">00:00:00:00</span>
     <span class="loader__skip mono">Click to skip</span>
     <i class="loader__bar"></i>
   </div>
+  <script>
+    /* The intro runs on its own, before anything heavy loads: CSS animates the words,
+       any click, key, scroll or touch skips it, and it always ends after ~3.6 s. */
+    (function () {
+      var l = document.getElementById("loader"), root = document.documentElement, seen = false;
+      try { seen = sessionStorage.getItem("keyu-intro") === "1"; } catch (e) {}
+      if (seen || matchMedia("(prefers-reduced-motion: reduce)").matches) { l.className += " is-gone"; return; }
+      root.classList.add("is-loading");
+      var tc = document.getElementById("loaderTc"), t0 = Date.now(), p = function (n) { return (n < 10 ? "0" : "") + n; };
+      var timer = setInterval(function () { var f = Math.floor((Date.now() - t0) / 1000 * 24); tc.textContent = "00:00:" + p(Math.floor(f / 24)) + ":" + p(f % 24); }, 42);
+      var done = function () {
+        if (l.classList.contains("is-done")) return;
+        clearInterval(timer);
+        l.classList.add("is-done");
+        root.classList.remove("is-loading");
+        try { sessionStorage.setItem("keyu-intro", "1"); } catch (e) {}
+        setTimeout(function () { l.classList.add("is-gone"); window.dispatchEvent(new Event("keyu:intro-done")); }, 900);
+      };
+      ["pointerdown", "keydown", "wheel", "touchstart"].forEach(function (ev) { window.addEventListener(ev, done, { passive: true }); });
+      setTimeout(done, 3600);
+    })();
+  </script>
 
   <div class="grain" aria-hidden="true"></div>
   <div class="cursor" aria-hidden="true"><span class="cursor__label"></span></div>

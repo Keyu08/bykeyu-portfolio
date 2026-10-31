@@ -52,17 +52,19 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 @media (hover: none) { .cursor { display: none; } }
 
 /* ---------- loader ---------- */
-.loader { position: fixed; inset: 0; z-index: 100; background: #030303; display: none; place-items: center; transition: clip-path 0.9s cubic-bezier(0.7, 0, 0.2, 1); clip-path: inset(0 0 0 0); }
+.loader { position: fixed; inset: 0; z-index: 100; background: #030303; display: none; place-items: center; cursor: pointer; transition: clip-path 0.9s cubic-bezier(0.7, 0, 0.2, 1); clip-path: inset(0 0 0 0);
+  animation: loaderOut 0.9s cubic-bezier(0.7, 0, 0.2, 1) 4.4s forwards; }  /* failsafe: it leaves even if scripts stall */
 .js .loader { display: grid; }
-.loader.is-done { clip-path: inset(0 0 100% 0); }
-.loader.is-gone { display: none; }
-.loader__line { font: italic 400 clamp(38px, 7vw, 112px)/1 "Instrument Serif", serif; text-align: center; padding: 0 var(--gut); letter-spacing: -0.01em; }
-.loader__line span { display: inline-block; opacity: 0; filter: blur(12px); transform: translateY(0.25em); transition: opacity 0.9s, filter 0.9s, transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1); }
-.loader__line span.is-on { opacity: 1; filter: blur(0); transform: none; }
+.loader.is-done { clip-path: inset(0 0 100% 0); pointer-events: none; }
+.loader.is-gone { display: none !important; }
+@keyframes loaderOut { to { clip-path: inset(0 0 100% 0); visibility: hidden; pointer-events: none; } }
+.loader__line { font: italic 400 clamp(38px, 7vw, 112px)/1 "Instrument Serif", Georgia, serif; text-align: center; padding: 0 var(--gut); letter-spacing: -0.01em; }
+.loader__line span { display: inline-block; opacity: 0; transform: translateY(0.3em); animation: word 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) forwards; animation-delay: calc(0.15s + var(--i, 0) * 0.36s); }
+@keyframes word { to { opacity: 1; transform: none; } }
 .loader__tc { position: absolute; left: var(--gut); bottom: 28px; color: var(--dim); }
 .loader__skip { position: absolute; right: var(--gut); bottom: 28px; color: var(--dim); }
-.loader__bar { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--sky); transform-origin: left; transform: scaleX(0); transition: transform 3s linear; }
-.loader.is-run .loader__bar { transform: scaleX(1); }
+.loader__bar { position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--sky); transform-origin: left; transform: scaleX(0); animation: bar 3.6s linear forwards; }
+@keyframes bar { to { transform: scaleX(1); } }
 html.is-loading body { overflow: hidden; }
 
 /* ---------- fixed corners (after the hero) ---------- */
@@ -97,7 +99,8 @@ html.is-loading body { overflow: hidden; }
 
 .hero__field, .hero__head { position: absolute; inset: 0; width: 100%; height: 100%; }
 .hero__field { z-index: 1; opacity: calc(1 - var(--z) * 2.5); }
-.hero__head { z-index: 3; }
+.hero__head { z-index: 3; opacity: 0; transition: opacity 1s ease; }
+.hero__head.is-ready { opacity: 1; }
 .hero__fallback { display: none; }
 .no-webgl .hero__fallback { display: block; position: absolute; z-index: 3; left: 50%; top: calc(var(--hg-h) + 2vh); width: min(46vh, 70vw); aspect-ratio: 9 / 16; transform: translateX(-50%); background: url("../assets/posters/storytelling1.jpg") center / cover; }
 

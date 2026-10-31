@@ -52,35 +52,6 @@ const clockFmt = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-
 const tickClock = () => $$("[data-clock]").forEach((el) => (el.textContent = clockFmt.format(new Date())));
 tickClock(); setInterval(tickClock, 20000);
 
-/* ---------- loader: "Lights down, friend. Come in." ---------- */
-(() => {
-  const el = $("#loader");
-  let seen = false;
-  try { seen = sessionStorage.getItem("keyu-intro") === "1"; } catch (e) {}
-  if (!el || reduce || seen) { el?.classList.add("is-gone"); return; }
-  root.classList.add("is-loading");
-  const words = $$(".loader__line span", el), tc = $("#loaderTc");
-  const t0 = performance.now(); let done = false;
-  words.forEach((w, i) => setTimeout(() => w.classList.add("is-on"), 250 + i * 380));
-  requestAnimationFrame(() => el.classList.add("is-run"));
-  const tick = () => {
-    if (done) return;
-    const f = Math.floor(((performance.now() - t0) / 1000) * 24);
-    tc.textContent = `00:00:${pad(Math.floor(f / 24))}:${pad(f % 24)}`;
-    requestAnimationFrame(tick);
-  };
-  tick();
-  const finish = () => {
-    if (done) return; done = true;
-    try { sessionStorage.setItem("keyu-intro", "1"); } catch (e) {}
-    el.classList.add("is-done"); root.classList.remove("is-loading");
-    setTimeout(() => el.classList.add("is-gone"), 950);
-  };
-  setTimeout(finish, 3300);
-  ["click", "keydown", "wheel", "touchstart"].forEach((ev) => el.addEventListener(ev, finish, { passive: true }));
-  window.addEventListener("keydown", finish, { once: true });
-})();
-
 /* ---------- smooth scroll ---------- */
 let lenis = null;
 if (!reduce && window.Lenis) {
@@ -146,7 +117,7 @@ if (!reduce) {
       void giantWord.offsetWidth;   // commit the start position, then let the letters rise in
       setTimeout(() => spans.forEach((s) => s.classList.remove("in")), 20);
     }, 650);
-  }, 3200);
+  }, 4600);
 }
 
 /* ---------- hero: line field + 3D head + dive into the eye ---------- */
@@ -197,12 +168,20 @@ const startHead = async () => {
     const img = new Image(); img.src = "assets/posters/storytelling1.jpg";
     await img.decode().catch(() => {});
     head = initHead(headCanvas, img);
+    requestAnimationFrame(() => headCanvas.classList.add("is-ready"));
   } catch (err) {
     root.classList.add("no-webgl");
     console.warn("3D head unavailable:", err);
   }
 };
-startHead();
+// build the head only once the intro is over, so the opening titles never stutter
+const introRunning = () => root.classList.contains("is-loading");
+if (introRunning()) {
+  let started = false;
+  const go = () => { if (!started) { started = true; setTimeout(startHead, 60); } };
+  window.addEventListener("keyu:intro-done", go, { once: true });
+  setTimeout(go, 5000);
+} else setTimeout(startHead, 60);
 
 const sectionProgress = (el) => {
   const r = el.getBoundingClientRect();
@@ -211,7 +190,7 @@ const sectionProgress = (el) => {
 
 const heroLoop = (time) => {
   const r = hero.getBoundingClientRect();
-  const visible = r.bottom > 0;
+  const visible = r.bottom > 0 && !introRunning();
   if (visible) {
     const zoom = reduce ? 0 : ss(0.06, 1, sectionProgress(hero));
     stage.style.setProperty("--z", zoom.toFixed(4));
