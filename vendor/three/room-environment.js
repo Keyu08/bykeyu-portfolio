@@ -2,7 +2,8 @@
  * https://github.com/google/model-viewer/blob/master/packages/model-viewer/src/three-components/EnvironmentScene.ts
  */
 
-import {
+(function () {
+const {
  	BackSide,
  	BoxGeometry,
  	Mesh,
@@ -10,7 +11,7 @@ import {
  	MeshStandardMaterial,
  	PointLight,
  	Scene,
-} from 'three';
+} = THREE;
 
 class RoomEnvironment extends Scene {
 
@@ -145,4 +146,5 @@ function createAreaLightMaterial( intensity ) {
 
 }
 
-export { RoomEnvironment };
+THREE.RoomEnvironment = RoomEnvironment;
+})();

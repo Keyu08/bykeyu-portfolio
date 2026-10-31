@@ -162,12 +162,15 @@ const drawField = (time, zoom) => {
 };
 
 let head = null;
+const loadScript = (src) => new Promise((res, rej) => { const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = () => rej(new Error("failed to load " + src)); document.head.appendChild(s); });
 const startHead = async () => {
   try {
-    const { initHead } = await import("./head.js");
+    if (!window.THREE) await loadScript("vendor/three/three.min.js");
+    if (!window.THREE.RoomEnvironment) await loadScript("vendor/three/room-environment.js");
+    if (!window.initKeyuHead) await loadScript("js/head.js");
     const img = new Image(); img.src = "assets/posters/storytelling1.jpg";
     await img.decode().catch(() => {});
-    head = initHead(headCanvas, img);
+    head = window.initKeyuHead(headCanvas, img);
     requestAnimationFrame(() => headCanvas.classList.add("is-ready"));
   } catch (err) {
     root.classList.add("no-webgl");

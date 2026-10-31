@@ -24,7 +24,7 @@ People who prefer reduced motion get no opening titles, no scroll animations and
 | `css/style.css` | Design: near-black, bone, a touch of sky blue; Anton, Instrument Serif, JetBrains Mono, Inter Tight |
 | `js/main.js` | Loader, smooth scroll, hero, work ring, film player, breakdown sync, letter, booking |
 | `js/head.js` | The 3D head (Three.js) and the dive into the eye |
-| `vendor/` | Three.js r160 and Lenis, served locally |
+| `vendor/` | Three.js r160 (plain script) and Lenis, served locally |
 | `assets/videos/`, `assets/posters/` | The 12 films (8-bit H.264 mp4) and their stills |
 | `assets/icons/` | Black and white app-icon versions of the logos |
 | `assets/logos/` | Original full-colour logos |
@@ -54,7 +54,7 @@ ffmpeg -ss 0.6 -i assets/videos/NAME.mp4 -frames:v 1 -vf "scale='min(720,iw)':-2
 python3 -m http.server 8000   # then open http://localhost:8000
 ```
 
-(Opening `index.html` straight from the disk won't load the 3D head: JS modules need a server.)
+(Opening `index.html` straight from the disk also works; the pupil just shows no film there.)
 
 ## Deploy
 

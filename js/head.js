@@ -1,12 +1,14 @@
 /* The 3D head: a chibi Keyu with round glasses. It follows the pointer in the hero,
    then the camera travels into his left eye as you scroll, where the pupil holds a film. */
-import * as THREE from "three";
-import { RoomEnvironment } from "three/addons/RoomEnvironment.js";
+(function () {
+const RoomEnvironment = THREE.RoomEnvironment;
 
 const ss = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
 const lerp = (a, b, t) => a + (b - a) * t;
 
 function irisTexture(img, bright) {
+  // a page opened from disk can't read images into WebGL, so draw the iris without the film there
+  if (img && location.protocol === "file:") img = null;
   const c = document.createElement("canvas"); c.width = c.height = 1024;
   const g = c.getContext("2d"); const R = 512;
   const gr = g.createRadialGradient(R, R, 60, R, R, R);
@@ -116,7 +118,7 @@ function buildHead(img) {
 /* initHead(canvas, img) → { resize, frame(state) }
    state: { px, py } pointer in 0..1 viewport units, { cx, cy, size } where the head sits on screen (px),
           zoom 0..1 (scroll progress into the eye) */
-export function initHead(canvas, img) {
+function initHead(canvas, img) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(1.5, window.devicePixelRatio || 1));
   renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
@@ -175,3 +177,5 @@ export function initHead(canvas, img) {
   };
   return { resize, frame };
 }
+window.initKeyuHead = initHead;
+})();
